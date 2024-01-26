@@ -14,7 +14,7 @@ class Sprite:
 
 class AnimatedSprite(Sprite):
     def __init__(self, size, position, image_data: dict):
-        super().__init__(size, position, image=1)
+        super().__init__(size, position)
         self.image_data = image_data
         for list in self.image_data:
             temp = []

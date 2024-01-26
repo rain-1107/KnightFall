@@ -1,3 +1,4 @@
-/sprites/
-/sprites/default/
-/sprites/player/
+
+*.pyc
+*.xml
+*.iml
