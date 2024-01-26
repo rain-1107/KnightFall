@@ -4,13 +4,15 @@ import pygame
 
 import KTFL
 
-test = KTFL.display.Display(fullscreen=True)
-camera = KTFL.display.Camera((200, 200), position=(100, 0))
-test.cameras.append(camera)
-
-
-
+screen = KTFL.display.Display(fullscreen=True)
+camera = KTFL.display.Camera((854, 480), position=(0, 0))
+screen.add_camera(camera)
+gui = KTFL.display.Camera((1920, 1080))
+screen.add_camera(gui)
+sprite = KTFL.sprite.Sprite((50, 50), [50, 50], colour=(0, 0, 200))
 
 while True:
     camera.surface.fill((200, 200, 200))
-    test.update()
+    camera.draw_to(sprite)
+    gui.draw_surf(KTFL.gui.get_text_surf("Hello"), (100, 100))
+    screen.update()

@@ -2,7 +2,6 @@ import pygame
 import KTFL.sprite
 
 
-
 class Display:
     def __init__(self, size=(500, 500), fullscreen=False, fps=60):
         if fullscreen:
@@ -29,13 +28,16 @@ class Display:
     def draw_to(self, sprite: KTFL.sprite.Sprite):
         self.surface.blit(sprite.image, sprite.position)
 
+    def draw_surf(self, surf, position):
+        self.surface.blit(surf, position)
+
 
 class Camera:
     def __init__(self, size, display_size=0, position=(0, 0)):
         self.size = size
         self.display_size = display_size
         self.position = position
-        self.surface = pygame.surface.Surface(size)
+        self.surface = pygame.surface.Surface(size, pygame.SRCALPHA)
 
     def update(self, display: Display):
         if self.display_size:
@@ -45,3 +47,6 @@ class Camera:
 
     def draw_to(self, sprite: KTFL.sprite.Sprite):
         self.surface.blit(sprite.image, sprite.position)
+
+    def draw_surf(self, surf, position):
+        self.surface.blit(surf, position)
