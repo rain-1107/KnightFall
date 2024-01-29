@@ -1,6 +1,6 @@
 NEED
 control.py
-- set up input class with dicts for input functions, control arrays
+- add full control scheme
 - set up how different input methods will be read and relayed (normalised vectors?)
 
 game.py
