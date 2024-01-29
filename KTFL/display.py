@@ -1,6 +1,7 @@
 import pygame
 import KTFL.sprite
 
+
 class Display:
     def __init__(self, size=(500, 500), fullscreen=False, fps=60):
         if fullscreen:

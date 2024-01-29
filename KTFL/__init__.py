@@ -7,5 +7,5 @@ pygame.init()
 import KTFL.display
 import KTFL.gui
 import KTFL.control
-import KTFL.game
+import KTFL.load_scene
 import KTFL.sprite
