@@ -22,6 +22,7 @@ class AnimatedSprite(Sprite):
                 try:
                     temp.append(pygame.image.load(image).convert_alpha())
                 except FileNotFoundError:
+                    print(f"Error: File not found at {image}")
                     surf = pygame.surface.Surface((50, 50))
                     surf.fill((255, 255, 255))
                     temp.append(surf)
@@ -48,29 +49,3 @@ class AnimatedSprite(Sprite):
         self.state = new_state
         self.index = -1
         self.tick = 0
-
-
-if __name__ == '__main__':
-    sprite = AnimatedSprite((50, 50), (0, 0), {
-    "idle": {
-      "tick": 0.5,
-      "loop": True,
-      "images": [
-        "sprites/player/idle-00.png",
-        "sprites/player/idle-01.png",
-        "sprites/player/idle-02.png"
-      ]
-    },
-    "run": {
-      "tick": 0.1,
-      "loop": True,
-      "images": [
-        "sprites/player/run-00.png",
-        "sprites/player/run-01.png",
-        "sprites/player/run-02.png",
-        "sprites/player/run-03.png",
-        "sprites/player/run-04.png",
-        "sprites/player/run-05.png"
-      ]
-    }
-  })
