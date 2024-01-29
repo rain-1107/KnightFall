@@ -1,0 +1,24 @@
+NEED
+control.py
+- set up input class with dicts for input functions, control arrays
+- set up how different input methods will be read and relayed (normalised vectors?)
+
+game.py
+- set out level file formats
+- set out data file formats
+- set out how level data will be stored
+- write functions to load data from file into class
+
+gui.py
+- create classes for different elements (buttons, switches, text boxes, pop up messages)
+- set out menu system for main menu, in-game menus
+
+spite.py
+- write functions for collision logic (basic checks, projectile bouncing)
+
+MAYBE
+particle.py
+- create particle system??
+
+shaders.py
+- write shaders??
