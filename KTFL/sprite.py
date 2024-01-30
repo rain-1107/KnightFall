@@ -1,20 +1,33 @@
 import pygame
+import random
+from KTFL.gui import get_text_surf
 
 
 class Sprite:
-    def __init__(self, size, position, image=None, colour=(255, 255, 255)):
+    def __init__(self, size, position, image=None, colour=(255, 255, 255), id=0):
+        self.id = id
         self.size = size
         self.position = position
         if image:
-            self.image = image
+            try:
+                self.image = pygame.image.load(image).convert_alpha()
+            except FileNotFoundError:
+                _surf = pygame.surface.Surface(size)
+                _surf.fill((random.randint(0, 255), random.randint(0, 255),random.randint(0, 255)))
+                text = get_text_surf(f"{image}")
+                _surf.blit(text, ((size[0] / 2) - (text.get_size()[0] / 2), (size[1] / 2) - (text.get_size()[1] / 2)))
+                self.image = _surf
         else:
             self.image = pygame.surface.Surface(size)
             self.image.fill(colour)
 
+    def draw_to(self, surf: pygame.surface.Surface):
+        surf.blit(self.image, self.position)
+
 
 class AnimatedSprite(Sprite):
-    def __init__(self, size, position, image_data: dict):
-        super().__init__(size, position)
+    def __init__(self, size, position, image_data: dict, id=0):
+        super().__init__(size, position, id=id)
         self.image_data = image_data
         for list in self.image_data:
             temp = []
@@ -23,9 +36,11 @@ class AnimatedSprite(Sprite):
                     temp.append(pygame.image.load(image).convert_alpha())
                 except FileNotFoundError:
                     print(f"Error: File not found at {image}")
-                    surf = pygame.surface.Surface((50, 50))
-                    surf.fill((255, 255, 255))
-                    temp.append(surf)
+                    _surf = pygame.surface.Surface(size)
+                    _surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+                    text = get_text_surf(f"{image}")
+                    _surf.blit(text, ((size[0] / 2) - (text.get_size()[0]/2), (size[1] / 2) - (text.get_size()[1]/2)))
+                    temp.append(_surf)
             self.image_data[list]["images"] = temp
         self.index = 0
         self.tick = 0

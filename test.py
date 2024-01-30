@@ -1,19 +1,23 @@
-import sys
-
-import pygame
-
 import KTFL
+import pygame
+from KTFL.physics import Vector2
+import random
 
-screen = KTFL.display.Display(fullscreen=True)
-camera = KTFL.display.Camera((854, 480), position=(0, 0))
+screen = KTFL.display.Display((1000, 1000), fullscreen=False)
+camera = KTFL.display.Camera((1000, 1000), position=(0, 0))
 screen.add_camera(camera)
-gui = KTFL.display.Camera((1920, 1080))
-screen.add_camera(gui)
-sprite = KTFL.sprite.Sprite((50, 50), (50, 50))
+inp = KTFL.control.Input()
+
+
+def cool():
+    print("cool")
+
+
+button = KTFL.gui.Button((100, 50), (50, 50), cool, "dark", "selected")
 
 
 while True:
-    camera.surface.fill((200, 200, 200))
-    camera.draw_to(sprite)
-    gui.draw_surf(KTFL.gui.get_text_surf("Hello"), (100, 100))
+    inp.update()
+    camera.surface.fill((255, 255, 255))
+    button.update(camera.surface, inp)
     screen.update()
