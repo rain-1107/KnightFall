@@ -1,24 +1,21 @@
 NEED
 control.py
-- add full control scheme
-- set up how different input methods will be read and relayed (normalised vectors?)
+-add controller support 
 
-game.py
-- set out level file formats
-- set out data file formats
-- set out how level data will be stored
-- write functions to load data from file into class
+level.py
+- finalise how level files will be stored read and parsed
 
 gui.py
 - create classes for different elements (buttons, switches, text boxes, pop up messages)
 - set out menu system for main menu, in-game menus
 
-spite.py
-- write functions for collision logic (basic checks, projectile bouncing)
+physics.py
+create collision detection between:
+- two polygons
+- line and polygon
+add snapping so a moving polygon with a vector can be correctly moved
 
 MAYBE
 particle.py
-- create particle system??
 
 shaders.py
-- write shaders??
