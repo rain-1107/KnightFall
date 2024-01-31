@@ -1,0 +1,1 @@
+- input controller crashes if file is invalid

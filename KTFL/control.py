@@ -5,16 +5,24 @@ import json
 class Input:
     def __init__(self, keyboard_config=None, allow_controller=False):
         # self.actions = {"invalid": "N/A"}
-        if keyboard_config:
+        try:
             self.keyboard = json.load(open(keyboard_config, "r"))
-        else:
+        except FileNotFoundError:
+            self.keyboard = json.load(open("KTFL/bin/default/keyboard_controls.json", "r"))
+        except TypeError:
             self.keyboard = json.load(open("KTFL/bin/default/keyboard_controls.json", "r"))
         # self.controller = {}
         self.log = {"input_type": "keyboard", "actions": {}, "mouse": {}}
         self.mouse_pressed = pygame.mouse.get_pressed(5)
         self.prev_mouse = self.mouse_pressed
 
-    # pygame.key.key_code(name)
+    def load_controls(self, config, type="keyboard"):
+        try:
+            self.keyboard = json.load(open(config, "r"))
+            self.log["actions"] = {}
+        except FileNotFoundError:
+            print(f"Error: {config} not found")
+
     def update(self):
         if self.log["input_type"] == "keyboard":
             self.u_keyboard()
@@ -67,7 +75,3 @@ class Input:
 
     def mouse_button(self, n):
         return self.log["mouse"]["buttons"][n-1]
-
-    def load_controls(self, fp, type="keyboard"):
-        if type == "keyboard":
-            self.keyboard = json.load(open(fp, "r"))

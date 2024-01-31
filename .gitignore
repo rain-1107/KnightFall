@@ -1,5 +1,7 @@
+/pygame/
+/bin/
 *.pyc
 *.xml
 *.iml
 test.py
-/pygame/
+main.py

@@ -1,4 +1,5 @@
 import pygame
+import KTFL.control
 import KTFL.sprite
 
 
@@ -12,6 +13,7 @@ class Display:
         self.cameras = []
         self.fps = fps
         self.clock = pygame.time.Clock()
+        self.control = KTFL.control.Input()
 
     def update(self):
         for event in pygame.event.get():
@@ -21,6 +23,7 @@ class Display:
             camera.update(self)
         pygame.display.flip()
         self.clock.tick(self.fps)
+        self.control.update()
 
     def add_camera(self, camera):
         self.cameras.append(camera)
