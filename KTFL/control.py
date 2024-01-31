@@ -29,17 +29,18 @@ class Input:
 
     def u_keyboard(self):
         self.mouse_pressed = pygame.mouse.get_pressed(5)
-        for action in self.log["actions"]:
-            if self.log["actions"][action] == "down":
-                self.log["actions"][action] = "held"
+        keys_pressed = pygame.key.get_pressed()
+        for key in self.keyboard:
+            if keys_pressed[pygame.key.key_code(key)]:
+                self.log["actions"][self.get_action(key)] = "held"
+            else:
+                try:
+                    self.log["actions"].pop(self.get_action(key))
+                except KeyError:
+                    pass
         for event in pygame.event.get(eventtype=[pygame.KEYUP, pygame.KEYDOWN]):
             if event.type == pygame.KEYDOWN:
                 self.log["actions"][self.get_action(pygame.key.name(event.key))] = "down"
-            elif event.type == pygame.KEYUP:
-                try:
-                    self.log["actions"].pop(self.get_action(pygame.key.name(event.key)))
-                except KeyError:
-                    pass # print to log file
         new_mouse = []
         for i, button in enumerate(self.mouse_pressed):
             if button:

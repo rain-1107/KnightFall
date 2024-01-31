@@ -51,6 +51,16 @@ class Polygon:
             else:
                 self.lines.append(Line(Vector2(*point), Vector2(*points[0])))
 
+    def does_line_intersect(self, line):
+        intersections = []
+        for _line in self.lines:
+            _inter = get_intersection(line, _line)
+            if _inter:
+                intersections.append(_inter)
+        if intersections:
+            return intersections
+        return False
+
 
 """def get_intersection(line1: Line, line2: Line):
     try:
@@ -90,7 +100,7 @@ def get_intersection(line1: Line, line2: Line):
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
 
-    if line1.start.x <= x <= line1.end.x and line2.start.x <= x <= line2.end.x:
-        if line1.lowest.y <= y <= line1.highest.y and line2.lowest.y <= y <= line2.highest.y:
+    if line1.start.x < x < line1.end.x and line2.start.x < x < line2.end.x:
+        if line1.lowest.y < y < line1.highest.y and line2.lowest.y < y < line2.highest.y:
             return x, y
     return False
