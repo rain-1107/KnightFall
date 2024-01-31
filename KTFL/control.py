@@ -26,11 +26,10 @@ class Input:
                 self.log["actions"][action] = "held"
         for event in pygame.event.get(eventtype=[pygame.KEYUP, pygame.KEYDOWN]):
             if event.type == pygame.KEYDOWN:
-                print(event.unicode)
-                self.log["actions"][self.get_action(event.unicode)] = "held"
+                self.log["actions"][self.get_action(pygame.key.name(event.key))] = "down"
             elif event.type == pygame.KEYUP:
                 try:
-                    self.log["actions"].pop(self.get_action(event.unicode))
+                    self.log["actions"].pop(self.get_action(pygame.key.name(event.key)))
                 except KeyError:
                     pass # print to log file
         new_mouse = []

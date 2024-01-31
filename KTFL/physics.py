@@ -31,6 +31,14 @@ class Line:
             self.highest = point1
             self.lowest = point2
 
+    @staticmethod
+    def get_vector_line(point, vector):
+        if type(point) == tuple or type(point) == list:
+            point = Vector2(*point)
+        if type(vector) == tuple or type(vector) == list:
+            vector = Vector2(*vector)
+        return Line(point, (point.x+vector.x, point.y+vector.y))
+
 
 # a set of lines that make a shape
 class Polygon:
