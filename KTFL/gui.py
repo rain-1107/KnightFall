@@ -35,10 +35,9 @@ class Button:
 
 
 class Switch:
-    def __init__(self, size, position, function, off_image, off_highlighted, on_image, on_highlighted):
+    def __init__(self, size, position, off_image, off_highlighted, on_image, on_highlighted):
         self.size = size
         self.position = position
-        self.function = function
         self.sprites = [
             [KTFL.sprite.Sprite(size, position, off_image), KTFL.sprite.Sprite(size, position, off_highlighted)],
             [KTFL.sprite.Sprite(size, position, on_image), KTFL.sprite.Sprite(size, position, on_highlighted)]]

@@ -15,6 +15,7 @@ class Input:
         self.log = {"input_type": "keyboard", "actions": {}, "mouse": {}, "keys": {}}
         self.mouse_pressed = pygame.mouse.get_pressed(5)
         self.prev_mouse = self.mouse_pressed
+        self.log["mouse"] = {"position": pygame.mouse.get_pos(), "buttons": self.mouse_pressed}
 
     def load_controls(self, config, type="keyboard"):
         try:
