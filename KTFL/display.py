@@ -20,12 +20,13 @@ class Display:
             if event.type == pygame.QUIT:
                 pygame.quit()
         for camera in self.cameras:
-            camera.update(self)
+            camera.update()
         pygame.display.flip()
         self.clock.tick(self.fps)
         self.control.update()
 
     def add_camera(self, camera):
+        camera.display = self
         self.cameras.append(camera)
 
     def draw_to(self, sprite: KTFL.sprite.Sprite):
@@ -38,15 +39,17 @@ class Display:
 class Camera:
     def __init__(self, size, display_size=0, position=(0, 0)):
         self.size = size
+        self.display = None
         self.display_size = display_size
         self.position = position
         self.surface = pygame.surface.Surface(size, pygame.SRCALPHA)
 
-    def update(self, display: Display):
+    def update(self):
+        surf = self.surface
         if self.display_size:
-            display.surface.blit(pygame.transform.scale(self.surface, self.display_size), self.position)
+            self.display.surface.blit(pygame.transform.scale(surf, self.display_size), self.position)
             return
-        display.surface.blit(pygame.transform.scale(self.surface, display.size), self.position)
+        self.display.surface.blit(pygame.transform.scale(surf, self.display.size), self.position)
 
     def draw_to(self, sprite: KTFL.sprite.Sprite):
         self.surface.blit(sprite.image, sprite.position)

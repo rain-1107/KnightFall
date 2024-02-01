@@ -74,8 +74,14 @@ class Input:
         except KeyError:
             return False
 
-    def mouse_pos(self):
-        return self.log["mouse"]["position"]
+    def mouse_pos(self, camera=None):
+        if camera:
+            screen_size = camera.display.surface.get_size()
+            xcoeff = camera.size[0] / screen_size[0]
+            ycoeff = camera.size[1] / screen_size[1]
+            return [self.log["mouse"]["position"][0]*xcoeff, self.log["mouse"]["position"][1]*ycoeff]
+        else:
+            return self.log["mouse"]["position"]
 
     def mouse_button(self, n):
         try:

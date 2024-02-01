@@ -16,7 +16,7 @@ class Sprite:
                 _surf.fill((random.randint(0, 255), random.randint(0, 255),random.randint(0, 255)))
                 text = get_text_surf(f"{image}")
                 _surf.blit(text, ((size[0] / 2) - (text.get_size()[0] / 2), (size[1] / 2) - (text.get_size()[1] / 2)))
-                self.image = _surf
+                self.image = _surf.convert()
         else:
             self.image = pygame.surface.Surface(size)
             self.image.fill(colour)

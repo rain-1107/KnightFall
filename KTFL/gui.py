@@ -20,11 +20,13 @@ class Button:
         self.pressed = False
         self.sprites = [KTFL.sprite.Sprite(size, position, image), KTFL.sprite.Sprite(size, position, select_image)]
 
-    def update(self, surf: pygame.surface.Surface, input: KTFL.control.Input):
+    def update(self, camera):
+        surf = camera.surface
+        input = camera.display.control
         self.pressed = False
         image_index = 0
-        if self.position[0] <= input.mouse_pos()[0] <= self.position[0] + self.size[0] and \
-                self.position[1] <= input.mouse_pos()[1] <= self.position[1] + self.size[1]:
+        if self.position[0] <= input.mouse_pos(camera)[0] <= self.position[0] + self.size[0] and \
+                self.position[1] <= input.mouse_pos(camera)[1] <= self.position[1] + self.size[1]:
             image_index = 1
             if input.mouse_button(1) == "down":
                 if self.function:
@@ -43,10 +45,12 @@ class Switch:
             [KTFL.sprite.Sprite(size, position, on_image), KTFL.sprite.Sprite(size, position, on_highlighted)]]
         self.on = 0
 
-    def update(self, surf: pygame.surface.Surface, input: KTFL.control.Input):
+    def update(self, camera):
+        surf = camera.surface
+        input = camera.display.control
         image_index = 0
-        if self.position[0] <= input.mouse_pos()[0] <= self.position[0] + self.size[0] and \
-                self.position[1] <= input.mouse_pos()[1] <= self.position[1] + self.size[1]:
+        if self.position[0] <= input.mouse_pos(camera)[0] <= self.position[0] + self.size[0] and \
+                self.position[1] <= input.mouse_pos(camera)[1] <= self.position[1] + self.size[1]:
             image_index = 1
             if input.mouse_button(1) == "down":
                 self.on = int(not self.on == 1)
@@ -65,10 +69,12 @@ class TextInput:
         self.show_column = True
         self.selected = False
 
-    def update(self, surf: pygame.surface.Surface, input: KTFL.control.Input, dt=1 / 60):
+    def update(self, camera, dt=1 / 60):
+        surf = camera.surface
+        input = camera.display.control
         if input.mouse_button(1) == "down":
-            if self.position[0] <= input.mouse_pos()[0] <= self.position[0] + self.size[0] and \
-                    self.position[1] <= input.mouse_pos()[1] <= self.position[1] + self.size[1]:
+            if self.position[0] <= input.mouse_pos(camera)[0] <= self.position[0] + self.size[0] and \
+                    self.position[1] <= input.mouse_pos(camera)[1] <= self.position[1] + self.size[1]:
                 self.selected = True
                 self.show_column = True
             else:

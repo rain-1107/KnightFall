@@ -1,3 +1,5 @@
+import math
+
 import pygame
 import random
 
@@ -10,14 +12,18 @@ class Vector2:
     def list(self):
         return [self.x, self.y]
 
+    @staticmethod
+    def list_to_vec(lst):
+        if type(lst) == tuple or type(lst) == list:
+            return Vector2(*lst)
+        return lst
+
 
 # two points with start being furthest left point and highest and lowest points to make intersection calculations easier
 class Line:
     def __init__(self, point1, point2):
-        if type(point1) == tuple or type(point1) == list:
-            point1 = Vector2(*point1)
-        if type(point2) == tuple or type(point2) == list:
-            point2 = Vector2(*point2)
+        point1 = Vector2.list_to_vec(point1)
+        point2 = Vector2.list_to_vec(point2)
         if point1.x <= point2.x:
             self.start = point1
             self.end = point2
@@ -61,6 +67,10 @@ class Polygon:
             return intersections
         return False
 
+    @staticmethod
+    def rect_to_poly(rect):
+        return Polygon([[rect[0], rect[1]], [rect[0]+rect[2], rect[1]], [rect[0]+rect[2], rect[1]+rect[3]], [rect[0], rect[1]+rect[3]]])
+
 
 """def get_intersection(line1: Line, line2: Line):
     try:
@@ -100,7 +110,25 @@ def get_intersection(line1: Line, line2: Line):
     x = det(d, xdiff) / div
     y = det(d, ydiff) / div
 
-    if line1.start.x < x < line1.end.x and line2.start.x < x < line2.end.x:
-        if line1.lowest.y < y < line1.highest.y and line2.lowest.y < y < line2.highest.y:
+    if line1.start.x <= x <= line1.end.x and line2.start.x <= x <= line2.end.x:
+        if line1.lowest.y <= y <= line1.highest.y and line2.lowest.y <= y <= line2.highest.y:
             return x, y
     return False
+
+
+def collision_between_moving_object(moving_object: Polygon, vector, object: Polygon):
+    vector = Vector2.list_to_vec([math.trunc(vector[0]*10)/10, math.trunc(vector[1]*10)/10])
+    vector_lines = []
+    for point in moving_object.points:
+        vector_lines.append(Line.get_vector_line(point, [vector.x, vector.y]))
+    for i, line in enumerate(vector_lines):
+        intersect = object.does_line_intersect(line)
+        if intersect:
+            return [intersect[0][0] - moving_object.points[i][0], intersect[0][1] - moving_object.points[i][1]]
+    return False
+
+
+if __name__ == '__main__':
+    rect1 = Polygon.rect_to_poly((0, 0, 50, 50))
+    rect2 = Polygon.rect_to_poly((51, 0, 50, 50))
+    print(collision_between_moving_object(rect2, [-5/3, 0], rect1))
