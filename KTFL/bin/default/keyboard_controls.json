@@ -3,6 +3,5 @@
   "a": "left",
   "s": "down",
   "d": "right",
-  "return": "next",
-  "invalid": "N/A"
+  "return": "next"
 }

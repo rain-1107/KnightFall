@@ -12,7 +12,7 @@ class Input:
         except TypeError:
             self.keyboard = json.load(open("KTFL/bin/default/keyboard_controls.json", "r"))
         # self.controller = {}
-        self.log = {"input_type": "keyboard", "actions": {}, "mouse": {}}
+        self.log = {"input_type": "keyboard", "actions": {}, "mouse": {}, "keys": {}}
         self.mouse_pressed = pygame.mouse.get_pressed(5)
         self.prev_mouse = self.mouse_pressed
 
@@ -28,6 +28,7 @@ class Input:
             self.u_keyboard()
 
     def u_keyboard(self):
+        self.log["keys"] = {}
         self.mouse_pressed = pygame.mouse.get_pressed(5)
         keys_pressed = pygame.key.get_pressed()
         for key in self.keyboard:
@@ -41,6 +42,7 @@ class Input:
         for event in pygame.event.get(eventtype=[pygame.KEYUP, pygame.KEYDOWN]):
             if event.type == pygame.KEYDOWN:
                 self.log["actions"][self.get_action(pygame.key.name(event.key))] = "down"
+                self.log["keys"][event.key] = ["down", event.mod]
         new_mouse = []
         for i, button in enumerate(self.mouse_pressed):
             if button:
@@ -57,7 +59,7 @@ class Input:
         try:
             return self.keyboard[key]
         except KeyError:
-            return self.keyboard["invalid"]
+            return None
 
     def is_action(self, action):
         try:
@@ -75,4 +77,7 @@ class Input:
         return self.log["mouse"]["position"]
 
     def mouse_button(self, n):
-        return self.log["mouse"]["buttons"][n-1]
+        try:
+            return self.log["mouse"]["buttons"][n-1]
+        except KeyError:
+            return False
