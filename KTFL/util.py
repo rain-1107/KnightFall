@@ -11,6 +11,10 @@ class Vector2:
         self.x = self.x/dist
         self.y = self.y/dist
 
+    def set(self, other):
+        self.x = other.x
+        self.y = other.y
+
     def __add__(self, other):
         return Vector2(self.x+other.x, self.y+other.y)
 
@@ -19,7 +23,10 @@ class Vector2:
 
     def __mul__(self, other):
         return Vector2(self.x*other.x, self.y*other.y)
-    
+
+    def __truediv__(self, other):
+        return Vector2(self.x/other.x, self.y/other.y)
+
     def __str__(self):
         return "x: {x}, y: {y}".format(x=self.x, y=self.y)
         
@@ -33,4 +40,3 @@ class Vector2:
             return Vector2(*lst)
         return lst
 
-    

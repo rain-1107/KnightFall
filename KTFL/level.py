@@ -1,7 +1,6 @@
 import pygame
 import json
 from KTFL.sprite import *
-from KTFL.physics import Polygon
 
 
 class Level:
@@ -26,4 +25,4 @@ class Level:
             self.sprites.append(_sprite)
         for object in self.physics_data["objects"]:
             if object["static"] == True:
-                self.physics_objects.append(Polygon(object["points"]))
+                self.physics_objects.append(pygame.rect.Rect(*object["rect"]))

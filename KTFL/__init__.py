@@ -10,3 +10,4 @@ import KTFL.control
 import KTFL.level
 import KTFL.sprite
 import KTFL.util
+import KTFL.entities
