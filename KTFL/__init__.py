@@ -9,4 +9,4 @@ import KTFL.gui
 import KTFL.control
 import KTFL.level
 import KTFL.sprite
-import KTFL.physics
+import KTFL.util
