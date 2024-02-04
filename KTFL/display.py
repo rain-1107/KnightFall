@@ -1,7 +1,7 @@
 import pygame
 import KTFL.control
 import KTFL.sprite
-import KTFL.util
+from .util import *
 
 
 class Display:
@@ -31,20 +31,19 @@ class Display:
         camera.display = self
         self.cameras.append(camera)
 
-    def draw_to(self, sprite: KTFL.sprite.Sprite):
-        self.surface.blit(sprite.image, sprite.position.list)
-
-    def draw_surf(self, surf, position):
-        self.surface.blit(surf, position)
+    def add_cameras(self, cameras):
+        for camera in cameras:
+            self.add_camera(camera)
 
 
 class Camera:
     def __init__(self, size, display_size=0, position=(0, 0)):
-        self.size = size
+        self.size = Vector2.list_to_vec(size)
         self.display = None
         self.display_size = display_size
-        self.position = KTFL.util.Vector2.list_to_vec(position)
+        self.position = Vector2.list_to_vec(position)
         self.surface = pygame.surface.Surface(size, pygame.SRCALPHA)
+        self.sprite_offset = Vector2(0, 0)
 
     def update(self):
         surf = self.surface
@@ -54,7 +53,15 @@ class Camera:
         self.display.surface.blit(pygame.transform.scale(surf, self.display.size.list), self.position.list)
 
     def draw_to(self, sprite: KTFL.sprite.Sprite):
-        self.surface.blit(sprite.image, sprite.position.list)
+        new_pos = sprite.position+self.sprite_offset
+        self.surface.blit(sprite.image, new_pos.list)
 
     def draw_surf(self, surf, position):
         self.surface.blit(surf, position)
+
+    def delete(self):
+        self.display.cameras.remove(self)
+        del self
+
+    def clear(self, colour=(0, 0, 0)):
+        self.surface.fill(colour)

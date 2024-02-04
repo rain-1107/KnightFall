@@ -1,4 +1,3 @@
-from typing import Any
 import pygame
 import KTFL.sprite
 import KTFL.control
@@ -13,12 +12,13 @@ def get_text_surf(text, font=None, colour=(0, 0, 0)):
 
 
 class Button:
-    def __init__(self, size, position, image, select_image, function=None):
+    def __init__(self, size, position, image, select_image, function=None, text=""):
         self.size = size
         self.position = position
         self.function = function
         self.pressed = False
         self.sprites = [KTFL.sprite.Sprite(size, position, image), KTFL.sprite.Sprite(size, position, select_image)]
+        self.text_surf = get_text_surf(text)
 
     def update(self, camera):
         surf = camera.surface
@@ -34,6 +34,7 @@ class Button:
                 else:
                     self.pressed = True
         surf.blit(self.sprites[image_index].image, self.position)
+        surf.blit(self.text_surf, [(self.position[0]+self.size[0]/2)-(self.text_surf.get_size()[0]/2), (self.position[1]+self.size[1]/2)-(self.text_surf.get_size()[1]/2)])
 
 
 class Switch:
@@ -58,11 +59,11 @@ class Switch:
 
 
 class TextInput:
-    def __init__(self, size, position, background_image, text_font=None):
+    def __init__(self, size, position, background_image, text_font=None, text=""):
         self.size = size
         self.position = position
         self.sprite = KTFL.sprite.Sprite(size, position, background_image)
-        self.text = "hello"
+        self.text = text
         self.font = text_font
         self.pulse = 0.5
         self.tick = 0

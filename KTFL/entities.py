@@ -21,13 +21,14 @@ class OverheadPlayer:
         self.size = Vector2.list_to_vec(self.data["size"])
         self.position = Vector2.list_to_vec(self.data["position"])
         self.rect = pygame.rect.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
-        self.sprite = KTFL.sprite.AnimatedSprite(self.size, self.position, self.data["image_data"])
+        self.sprite = KTFL.sprite.AnimatedSprite(self.size, self.position, self.data["image_data"], centered = True)
         self.speed = 300
         self.level = None
 
     def update(self, camera, dt=1/60):
         self.sprite.update_animation(dt)
         self.sprite.draw_to(camera.surface)
+        pygame.draw.rect(camera.surface, (0, 0, 0), self.rect, width=1)
         self.move(camera.display.control, dt)
 
     def move(self, control: KTFL.control.Input, dt):

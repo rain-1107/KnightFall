@@ -2,13 +2,15 @@ import pygame
 import random
 from KTFL.gui import get_text_surf
 from KTFL.util import Vector2
-
+from copy import deepcopy
 
 class Sprite:
-    def __init__(self, size, position, image=None, colour=(255, 255, 255), id=0):
+    def __init__(self, size, position, image=None, colour=(255, 255, 255), centered=False, id=0):
         self.id = id
+        self.centered = centered
         self.size = Vector2.list_to_vec(size)
-        self.position = Vector2.list_to_vec(position)
+        self.top_left = Vector2.list_to_vec(position)
+        self.image_file = image
         if image:
             try:
                 self.image = pygame.image.load(image).convert_alpha()
@@ -25,11 +27,18 @@ class Sprite:
     def draw_to(self, surf: pygame.surface.Surface):
         surf.blit(self.image, self.position.list)
 
+    @property
+    def position(self):
+        if self.centered:
+            return Vector2(self.top_left.x - (self.size.x / 2), self.top_left.y)
+        return self.top_left
+
 
 class AnimatedSprite(Sprite):
-    def __init__(self, size, position, image_data: dict, id=0):
-        super().__init__(size, position, id=id)
-        self.image_data = image_data
+    def __init__(self, size, position, image_data: dict, centered=False, id=0):
+        super().__init__(size, position, id=id, centered=centered)
+        self.raw_data = deepcopy(image_data)
+        self.image_data = deepcopy(image_data)
         for list in self.image_data:
             temp = []
             for image in self.image_data[list]["images"]:

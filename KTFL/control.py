@@ -3,16 +3,22 @@ import json
 
 
 class Input:
-    def __init__(self, keyboard_config=None, allow_controller=False):
-        # self.actions = {"invalid": "N/A"}
+    def __init__(self, keyboard_config="", allow_controller=False):
+        self.log = {"input_type": "keyboard", "actions": {}, "mouse": {}, "keys": {}}
         try:
             self.keyboard = json.load(open(keyboard_config, "r"))
         except FileNotFoundError:
-            self.keyboard = json.load(open("KTFL/bin/default/keyboard_controls.json", "r"))
+            try:
+                self.keyboard = json.load(open("KTFL/bin/default/keyboard_controls.json", "r"))
+            except FileNotFoundError:
+                self.keyboard = None
+                self.log["input_type"] = None
         except TypeError:
-            self.keyboard = json.load(open("KTFL/bin/default/keyboard_controls.json", "r"))
-        # self.controller = {}
-        self.log = {"input_type": "keyboard", "actions": {}, "mouse": {}, "keys": {}}
+            try:
+                self.keyboard = json.load(open("KTFL/bin/default/keyboard_controls.json", "r"))
+            except FileNotFoundError:
+                self.keyboard = None
+                self.log["input_type"] = None
         self.mouse_pressed = pygame.mouse.get_pressed(5)
         self.prev_mouse = self.mouse_pressed
         self.log["mouse"] = {"position": pygame.mouse.get_pos(), "buttons": self.mouse_pressed}
@@ -20,6 +26,7 @@ class Input:
     def load_controls(self, config, type="keyboard"):
         try:
             self.keyboard = json.load(open(config, "r"))
+            self.log["input_type"] = "keyboard"
             self.log["actions"] = {}
         except FileNotFoundError:
             print(f"Error: {config} not found")
@@ -79,7 +86,7 @@ class Input:
             screen_size = camera.display.surface.get_size()
             xcoeff = camera.size.x / screen_size[0]
             ycoeff = camera.size.y / screen_size[1]
-            return [self.log["mouse"]["position"][0]*xcoeff-camera.position.x, self.log["mouse"]["position"][1]*ycoeff-camera.position.u]
+            return [self.log["mouse"]["position"][0]*xcoeff-camera.position.x, self.log["mouse"]["position"][1]*ycoeff-camera.position.y]
         else:
             return self.log["mouse"]["position"]
 
