@@ -10,8 +10,8 @@
     {
       "id":1,
       "position":[
-        0,
-        0
+        300,
+        300
       ],
       "animated":false,
       "image_data":"x.png",
@@ -49,7 +49,7 @@
         "sprite_id":1,
         "static":true,
         "rect":[
-          0, 0, 50, 50
+         300, 300, 50, 50
         ]
       }
     ]
