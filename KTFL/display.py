@@ -1,4 +1,5 @@
 import pygame
+import sys
 import KTFL.control
 import KTFL.sprite
 from .util import *
@@ -20,7 +21,7 @@ class Display:
     def update(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
+                sys.exit()
         for camera in self.cameras:
             camera.update()
         pygame.display.flip()

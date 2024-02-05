@@ -10,11 +10,11 @@ ui_cam = KTFL.display.Camera(size=(1600, 900))
 level_cam = KTFL.display.Camera(size=(1300, 900), position=(300, 0), display_size=(1300, 900))
 screen.add_camera(level_cam)
 screen.add_camera(ui_cam)
-screen.control.load_controls("input.json")
+screen.control.load_controls("level editor/input.json")
 text_surfaces = []
 buttons = {}
 inputs = {}
-current_level = KTFL.level.Level("levels/default.json")
+current_level = KTFL.level.Level("level editor/levels/default.json")
 current_level.load()
 
 selected_sprite_text_surface_index = None # i know this sucks but like idc its better than what i was going to do
@@ -25,45 +25,45 @@ def create_menu():
     global selected_sprite_text_surface_index # this is so fucking dumb
     text_surfaces.append([KTFL.gui.get_text_surf("Load level from file"), (20, 35)])
     text_surfaces.append([KTFL.gui.get_text_surf("Save level"), (20, 95)])
-    buttons["load"] = KTFL.gui.Button((75, 30), (120, 50), "bin/images/button0.png", "bin/images/button1.png",
+    buttons["load"] = KTFL.gui.Button((75, 30), (120, 50), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                       function=load_level, text="Load")
-    buttons["save"] = KTFL.gui.Button((75, 30), (120, 110), "bin/images/button0.png", "bin/images/button1.png",
+    buttons["save"] = KTFL.gui.Button((75, 30), (120, 110), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                       function=save_level, text="Save")
-    inputs["load"] = KTFL.gui.TextInput((75, 30), (20, 50), "bin/images/input.png", text="default")
-    inputs["save"] = KTFL.gui.TextInput((75, 30), (20, 110), "bin/images/input.png", text="default")
+    inputs["load"] = KTFL.gui.TextInput((75, 30), (20, 50), "level editor/bin/images/input.png", text="default")
+    inputs["save"] = KTFL.gui.TextInput((75, 30), (20, 110), "level editor/bin/images/input.png", text="default")
 
-    buttons["up"] = KTFL.gui.Button((30, 30), (100, 170), "bin/images/2button0.png", "bin/images/2button1.png", function=move_cam_up, text="up")
-    buttons["left"] = KTFL.gui.Button((30, 30), (70, 200), "bin/images/2button0.png", "bin/images/2button1.png",
+    buttons["up"] = KTFL.gui.Button((30, 30), (100, 170), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png", function=move_cam_up, text="up")
+    buttons["left"] = KTFL.gui.Button((30, 30), (70, 200), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_left, text="L")
-    buttons["down"] = KTFL.gui.Button((30, 30), (100, 230), "bin/images/2button0.png", "bin/images/2button1.png",
+    buttons["down"] = KTFL.gui.Button((30, 30), (100, 230), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_down, text="down")
-    buttons["right"] = KTFL.gui.Button((30, 30), (130, 200), "bin/images/2button0.png", "bin/images/2button1.png",
+    buttons["right"] = KTFL.gui.Button((30, 30), (130, 200), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_right, text="R")
 
-    inputs["file"] = KTFL.gui.TextInput((150, 30), (100, 300), "bin/images/input1.png", text="")
+    inputs["file"] = KTFL.gui.TextInput((150, 30), (100, 300), "level editor/bin/images/input1.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("File"), (20, 305)])
 
-    inputs["position"] = KTFL.gui.TextInput((75, 30), (100, 350), "bin/images/input.png", text="")
+    inputs["position"] = KTFL.gui.TextInput((75, 30), (100, 350), "level editor/bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("Position"), (20, 355)])
 
-    inputs["size"] = KTFL.gui.TextInput((75, 30), (100, 400), "bin/images/input.png", text="")
+    inputs["size"] = KTFL.gui.TextInput((75, 30), (100, 400), "level editor/bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("Size"), (20, 405)])
 
-    inputs["id"] = KTFL.gui.TextInput((75, 30), (100, 450), "bin/images/input.png", text="")
+    inputs["id"] = KTFL.gui.TextInput((75, 30), (100, 450), "level editor/bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("ID"), (20, 455)])
     
-    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (80, 500), "bin/images/input.png", text="")
-    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (180, 500), "bin/images/input.png", text="")
+    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (80, 500), "level editor/bin/images/input.png", text="")
+    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (180, 500), "level editor/bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("grid"), (10, 505)])
 
-    buttons["create"] = KTFL.gui.Button((75, 30), (200, 350), "bin/images/button0.png", "bin/images/button1.png",
+    buttons["create"] = KTFL.gui.Button((75, 30), (200, 350), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                       function=create_sprite, text="Create")
-    buttons["edit"] = KTFL.gui.Button((75, 30), (200, 400), "bin/images/button0.png", "bin/images/button1.png",
+    buttons["edit"] = KTFL.gui.Button((75, 30), (200, 400), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                         function=edit_sprite, text="Edit")
-    buttons["delete"] = KTFL.gui.Button((75, 30), (200, 450), "bin/images/button0.png", "bin/images/button1.png",
+    buttons["delete"] = KTFL.gui.Button((75, 30), (200, 450), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                         function=delete_sprite, text="Delete")
 
-    buttons["grid"] = KTFL.gui.Switch((30, 30), (260, 500), "bin/images/off.png", "bin/images/on.png")
+    buttons["grid"] = KTFL.gui.Switch((30, 30), (260, 500), "level editor/bin/images/off.png", "level editor/bin/images/on.png")
 
     text_surfaces.append([KTFL.gui.get_text_surf(f"Sprite ID: None"), (10, 800)])
     selected_sprite_text_surface_index = len(text_surfaces) - 1
@@ -87,13 +87,13 @@ def move_cam_down():
 
 def load_level():
     global current_level
-    current_level = KTFL.level.Level("levels/"+inputs["load"].text+".json")
+    current_level = KTFL.level.Level("level editor/levels/"+inputs["load"].text+".json")
     current_level.load()
 
 
 def save_level():
     global current_level
-    f = open("levels/"+inputs["save"].text+".json", "w")
+    f = open("level editor/levels/"+inputs["save"].text+".json", "w")
     current_level.update_raw()
     json.dump(current_level.raw, f, indent=2)
     current_level.file = "levels/"+inputs["save"].text+".json"

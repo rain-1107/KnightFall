@@ -4,6 +4,7 @@ from KTFL.gui import get_text_surf
 from KTFL.util import Vector2
 from copy import deepcopy
 
+
 class Sprite:
     def __init__(self, size, position, image=None, colour=(255, 255, 255), centered=False, id=0):
         self.id = id

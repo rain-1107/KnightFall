@@ -101,7 +101,7 @@ class TextInput:
                 try:
                     if chr(key) == "\b":
                         self.text = self.text[:-1]
-                    elif chr(key) not in """qwertyuiop[]asdfghjkl;'#\zxcvbnm,./1234567890-=`QWERTYUIOP{}ASDFGHJKL:@~|ZXCVBNM<>?\\¬!"£$%^&*()_+ """:
+                    elif chr(key) not in """qwertyuiop[]asdfghjkl;'#zxcvbnm,./1234567890-=`QWERTYUIOP{}ASDFGHJKL:@~|ZXCVBNM<>?\\¬!"£$%^&*()_+ """:
                         pass
                     else:
                         if input.log["keys"][key][1] & pygame.KMOD_LSHIFT:
