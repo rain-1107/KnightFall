@@ -1,57 +1,33 @@
 {
-  "meta":{
-    "size":[
+  "meta": {
+    "size": [
       1000,
       1000
-    ],"background": [200, 200, 200],
-    "name":"example"
+    ],
+    "background": [
+      200,
+      200,
+      200
+    ],
+    "name": "example",
+    "image_folder": "bin/images/"
   },
-  "sprites":[
+  "physics": {
+    "objects": []
+  },
+  "sprites": [
     {
-      "id":1,
-      "position":[
-        300,
-        300
+      "id": 1,
+      "position": [
+        352.0,
+        278.0
       ],
-      "animated":false,
-      "image_data":"x.png",
-      "size":[
-        50,
-        50
-      ]
-    },
-    {
-      "id":2,
-      "size":[
-        200,
-        200
+      "size": [
+        50.0,
+        50.0
       ],
-      "position":[
-        0,
-        0
-      ],
-      "animated":true,
-      "image_data":{
-        "state":{
-          "tick":0.5,
-          "loop":true,
-          "images":[
-            "x.png",
-            "x2.png"
-          ]
-        }
-      }
+      "animated": false,
+      "image_data": "hi"
     }
-  ],
-  "physics":{
-    "objects":[
-      {
-        "sprite_id":1,
-        "static":true,
-        "rect":[
-         300, 300, 50, 50
-        ]
-      }
-    ]
-  }
+  ]
 }

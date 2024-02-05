@@ -25,9 +25,14 @@ class Level:
         self.physics_data = self.raw["physics"]
         for sprite in self.sprite_data:
             if sprite["animated"]:
+                image_data = sprite["image_data"]
+                for state in image_data:
+                    for i in range(len(image_data[state]["images"])):
+                        image_data[state]["images"][i] = self.meta["image_folder"] + image_data[state]["images"][i]
                 _sprite = AnimatedSprite(sprite["size"], sprite["position"], sprite["image_data"], id=sprite["id"])
             else:
-                _sprite = Sprite(sprite["size"], sprite["position"], sprite["image_data"], id=sprite["id"])
+                _sprite = Sprite(sprite["size"], sprite["position"],
+                                         self.meta["image_folder"] + sprite["image_data"], id=sprite["id"])
             self.sprites.append(_sprite)
         for object in self.physics_data["objects"]:
             if object["static"] == True:
