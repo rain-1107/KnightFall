@@ -9,7 +9,8 @@
       200,
       200
     ],
-    "name": "example"
+    "name": "example",
+    "image_folder": "bin/images/"
   },
   "physics": {
     "objects": []
