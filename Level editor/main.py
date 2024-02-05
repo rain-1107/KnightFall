@@ -133,20 +133,22 @@ def update_menu():
     else:
         text_surfaces[selected_sprite_text_surface_index][0] = KTFL.gui.get_text_surf("Sprite ID: None")
     if screen.control.mouse_button(1) == "down":
-        print(mouse_pos-level_cam.sprite_offset)
         for sprite in current_level.sprites:
-            print(sprite.is_point_in_sprite(mouse_pos-level_cam.sprite_offset), mouse_pos-level_cam.sprite_offset)
             if sprite.is_point_in_sprite(mouse_pos-level_cam.sprite_offset):
-                print("clicked")
                 selected_sprite = sprite
                 selected_sprite_offset = mouse_pos - level_cam.sprite_offset - sprite.position
                 update_level_cam()
     elif screen.control.mouse_button(1) == "held" and selected_sprite:
         selected_sprite.set_position(mouse_pos-level_cam.sprite_offset-selected_sprite_offset)
-        print("held", mouse_pos-level_cam.sprite_offset-selected_sprite_offset)
         update_level_cam()
     elif not screen.control.mouse_button(1):
-        selected_sprite = None
+        if selected_sprite:
+            if inputs["gridsnapx"].text and inputs["gridsnapy"].text:
+                new_pos = Vector2(*selected_sprite.position.snap_to_grid(float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text)))
+                selected_sprite.set_position(new_pos)
+            selected_sprite = None
+            update_level_cam()
+
 
     #draw_grid(level_cam)
 

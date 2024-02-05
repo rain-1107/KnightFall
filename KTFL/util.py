@@ -35,7 +35,7 @@ class Vector2:
         if apply:
             self.x = snapped_x
             self.y = snapped_y
-        return (snapped_x, snapped_y)
+        return snapped_x, snapped_y
 
     @property
     def list(self):
