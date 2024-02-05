@@ -27,11 +27,33 @@ class Sprite:
     def draw_to(self, surf: pygame.surface.Surface):
         surf.blit(self.image, self.position.list)
 
+    def set_position(self, new):
+        self.top_left = Vector2.list_to_vec(new)
+
+    def set_size(self, new):
+        self.size = Vector2.list_to_vec(new)
+
+    def set_image(self, file):
+        self.image_file = file
+        try:
+            self.image = pygame.image.load(self.image_file).convert_alpha()
+        except FileNotFoundError:
+            _surf = pygame.surface.Surface(self.size.list)
+            _surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+            text = get_text_surf(f"{self.image_file}")
+            _surf.blit(text,
+                       ((self.size.x / 2) - (text.get_size()[0] / 2), (self.size.y / 2) - (text.get_size()[1] / 2)))
+            self.image = _surf.convert()
+
     @property
     def position(self):
         if self.centered:
             return Vector2(self.top_left.x - (self.size.x / 2), self.top_left.y)
         return self.top_left
+
+    @property
+    def centre(self):
+        return Vector2(self.top_left.x - (self.size.x / 2), self.top_left.y)
 
 
 class AnimatedSprite(Sprite):
