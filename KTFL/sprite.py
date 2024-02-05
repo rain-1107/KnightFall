@@ -45,6 +45,12 @@ class Sprite:
                        ((self.size.x / 2) - (text.get_size()[0] / 2), (self.size.y / 2) - (text.get_size()[1] / 2)))
             self.image = _surf.convert()
 
+    def is_point_in_sprite(self, point: tuple):
+        if point[0] > self.position.x and point[0] < self.position.x + self.size.x:
+            if point[1] > self.position.y and point[1] < self.position.y + self.size.y:
+                return True
+        return False
+    
     @property
     def position(self):
         if self.centered:
