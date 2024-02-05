@@ -3,7 +3,7 @@ import pygame
 import json
 
 from KTFL.util import Vector2
-# from KTFL.gui import draw_grid
+from KTFL.gui import draw_grid
 
 screen = KTFL.display.Display(size=(1600, 900))
 ui_cam = KTFL.display.Camera(size=(1600, 900))
@@ -69,29 +69,24 @@ def create_menu():
 
 def move_cam_left():
     level_cam.sprite_offset.x += 50
-    update_level_cam()
 
 
 def move_cam_right():
     level_cam.sprite_offset.x -= 50
-    update_level_cam()
 
 
 def move_cam_up():
     level_cam.sprite_offset.y += 50
-    update_level_cam()
 
 
 def move_cam_down():
     level_cam.sprite_offset.y -= 50
-    update_level_cam()
 
 
 def load_level():
     global current_level
     current_level = KTFL.level.Level("levels/"+inputs["load"].text+".json")
     current_level.load()
-    update_level_cam()
 
 
 def save_level():
@@ -101,11 +96,13 @@ def save_level():
     json.dump(current_level.raw, f, indent=2)
     current_level.file = "levels/"+inputs["save"].text+".json"
     # current_level.load()
-    update_level_cam()
 
 
 def update_level_cam():
     level_cam.clear(current_level.meta["background"])
+    if inputs["gridsnapx"].text and inputs["gridsnapy"].text:
+        draw_grid(level_cam, float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text))
+
     pygame.draw.rect(level_cam.surface, (0, 0, 0), (
     level_cam.sprite_offset.x, level_cam.sprite_offset.y, current_level.meta["size"][0], current_level.meta["size"][1]), width=2)
     for sprite in current_level.sprites:
@@ -137,20 +134,15 @@ def update_menu():
             if sprite.is_point_in_sprite(mouse_pos-level_cam.sprite_offset):
                 selected_sprite = sprite
                 selected_sprite_offset = mouse_pos - level_cam.sprite_offset - sprite.position
-                update_level_cam()
     elif screen.control.mouse_button(1) == "held" and selected_sprite:
         selected_sprite.set_position(mouse_pos-level_cam.sprite_offset-selected_sprite_offset)
-        update_level_cam()
     elif not screen.control.mouse_button(1):
         if selected_sprite:
             if inputs["gridsnapx"].text and inputs["gridsnapy"].text:
                 new_pos = Vector2(*selected_sprite.position.snap_to_grid(float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text)))
                 selected_sprite.set_position(new_pos)
             selected_sprite = None
-            update_level_cam()
 
-
-    #draw_grid(level_cam)
 
 def create_sprite():
     print("new sprite")
@@ -161,14 +153,11 @@ def create_sprite():
     size = [float(size[0]), float(size[1])]
     id = int(inputs["id"].text)
     current_level.add_sprite(KTFL.sprite.Sprite(size, position, file, id=id))
-    update_level_cam()
-
 
 def delete_sprite():
     try:
         id = int(inputs["id"].text)
         current_level.delete_sprite(id)
-        update_level_cam()
     except:
         print("error deleting sprite")
 
@@ -187,7 +176,6 @@ def edit_sprite():
             sprite.set_size(size)
         if inputs["file"].text:
             sprite.set_image(inputs["file"].text)
-        update_level_cam()
     except:
         print("error editing sprite")
 
@@ -197,4 +185,5 @@ update_level_cam()
 
 while True:
     update_menu()
+    update_level_cam()
     screen.update()
