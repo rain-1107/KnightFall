@@ -52,9 +52,9 @@ def create_menu():
     inputs["id"] = KTFL.gui.TextInput((75, 30), (100, 450), "bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("ID"), (20, 455)])
     
-    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (100, 500), "bin/images/input.png", text="")
-    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (200, 500), "bin/images/input.png", text="")
-    text_surfaces.append([KTFL.gui.get_text_surf("GRID SNAP"), (10, 505)])
+    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (80, 500), "bin/images/input.png", text="")
+    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (180, 500), "bin/images/input.png", text="")
+    text_surfaces.append([KTFL.gui.get_text_surf("grid"), (10, 505)])
 
     buttons["create"] = KTFL.gui.Button((75, 30), (200, 350), "bin/images/button0.png", "bin/images/button1.png",
                                       function=create_sprite, text="Create")
@@ -63,7 +63,9 @@ def create_menu():
     buttons["delete"] = KTFL.gui.Button((75, 30), (200, 450), "bin/images/button0.png", "bin/images/button1.png",
                                         function=delete_sprite, text="Delete")
 
-    text_surfaces.append([KTFL.gui.get_text_surf(f"Sprite ID: None"), (10, 800)]) # its just gonna display sprite id
+    buttons["grid"] = KTFL.gui.Switch((30, 30), (260, 500), "bin/images/off.png", "bin/images/on.png")
+
+    text_surfaces.append([KTFL.gui.get_text_surf(f"Sprite ID: None"), (10, 800)])
     selected_sprite_text_surface_index = len(text_surfaces) - 1
 
 
@@ -100,8 +102,8 @@ def save_level():
 
 def update_level_cam():
     level_cam.clear(current_level.meta["background"])
-    if inputs["gridsnapx"].text and inputs["gridsnapy"].text:
-        draw_grid(level_cam, float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text))
+    if inputs["gridsnapx"].text and inputs["gridsnapy"].text and buttons["grid"].on:
+        draw_grid(level_cam, float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text), pygame.rect.Rect(0, 0, *current_level.meta["size"]))
 
     pygame.draw.rect(level_cam.surface, (0, 0, 0), (
     level_cam.sprite_offset.x, level_cam.sprite_offset.y, current_level.meta["size"][0], current_level.meta["size"][1]), width=2)
@@ -138,7 +140,7 @@ def update_menu():
         selected_sprite.set_position(mouse_pos-level_cam.sprite_offset-selected_sprite_offset)
     elif not screen.control.mouse_button(1):
         if selected_sprite:
-            if inputs["gridsnapx"].text and inputs["gridsnapy"].text:
+            if inputs["gridsnapx"].text and inputs["gridsnapy"].text and buttons["grid"].on:
                 new_pos = Vector2(*selected_sprite.position.snap_to_grid(float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text)))
                 selected_sprite.set_position(new_pos)
             selected_sprite = None

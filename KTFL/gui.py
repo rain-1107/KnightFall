@@ -4,18 +4,16 @@ import KTFL.control
 
 FONT = pygame.font.Font("freesansbold.ttf", 15)
 
-# TODO : GRID NEEDS TO BE LOCKED TO WORLD NOT CAMERA
-# TODO : SO LIKE MAKE IT NOT MOVE WITH CAMERA IDK HOW IM TOO TIRED
-# TODO : GOOD LOOK RYAN :D
-def draw_grid(camera, sx, sy):
-    if sx < 4 or sy < 4: #python shits the bed if too low :(
-        return
+
+def draw_grid(camera, sx, sy, inside_rect):
     surf = camera.surface
-    camerasnapped = camera.position.snap_to_grid(sx,sy)
-    for x in range(0, surf.get_width(), int(sx)):
-        for y in range(0, surf.get_height(), int(sy)):
-            rect = pygame.Rect(x, y, sx, sy)
-            pygame.draw.rect(surf, (255,255,255), rect, 1)
+    for x in range(inside_rect.left, inside_rect.right, int(sx)):
+        pygame.draw.line(surf, (0, 0, 0), (x+camera.sprite_offset.x, inside_rect.top+camera.sprite_offset.y),
+                         (x+camera.sprite_offset.x, inside_rect.bottom+camera.sprite_offset.y))
+    for y in range(inside_rect.top, inside_rect.bottom, int(sy)):
+        pygame.draw.line(surf, (0, 0, 0), (inside_rect.left+camera.sprite_offset.x, y+camera.sprite_offset.y),
+                         (inside_rect.right+camera.sprite_offset.x, y+camera.sprite_offset.y))
+
 
 def get_text_surf(text, font=None, colour=(0, 0, 0)):
     if font:
