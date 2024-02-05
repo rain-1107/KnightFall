@@ -3,7 +3,7 @@ import pygame
 import json
 
 from KTFL.util import Vector2
-from KTFL.gui import draw_grid
+# from KTFL.gui import draw_grid
 
 screen = KTFL.display.Display(size=(1600, 900))
 ui_cam = KTFL.display.Camera(size=(1600, 900))
@@ -40,7 +40,7 @@ def create_menu():
     buttons["right"] = KTFL.gui.Button((30, 30), (130, 200), "bin/images/2button0.png", "bin/images/2button1.png",
                                     function=move_cam_right, text="R")
 
-    inputs["file"] = KTFL.gui.TextInput((150, 30), (100, 300), "bin/images/input.png", text="")
+    inputs["file"] = KTFL.gui.TextInput((150, 30), (100, 300), "bin/images/input1.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("File"), (20, 305)])
 
     inputs["position"] = KTFL.gui.TextInput((75, 30), (100, 350), "bin/images/input.png", text="")
@@ -63,7 +63,7 @@ def create_menu():
     buttons["delete"] = KTFL.gui.Button((75, 30), (200, 450), "bin/images/button0.png", "bin/images/button1.png",
                                         function=delete_sprite, text="Delete")
 
-    text_surfaces.append([KTFL.gui.get_text_surf("???"), (10, 800)]) #what sprite we selecting (TODO : ryan should add sprite names)
+    text_surfaces.append([KTFL.gui.get_text_surf(f"Sprite ID: None"), (10, 800)]) # its just gonna display sprite id
     selected_sprite_text_surface_index = len(text_surfaces) - 1
 
 
@@ -110,7 +110,8 @@ def update_level_cam():
     level_cam.sprite_offset.x, level_cam.sprite_offset.y, current_level.meta["size"][0], current_level.meta["size"][1]), width=2)
     for sprite in current_level.sprites:
         level_cam.draw_to(sprite)
-        level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(sprite.id)), position=sprite.top_left.list)
+        pos = sprite.top_left + level_cam.sprite_offset
+        level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(sprite.id)), position=pos.list)
     for rect in current_level.physics_objects:
         pygame.draw.rect(level_cam.surface, (20, 20, 20), (rect.left+level_cam.sprite_offset.x, rect.top+level_cam.sprite_offset.y, rect.w, rect.h), width=3)
 
@@ -126,18 +127,26 @@ def update_menu():
     for key in inputs:
         inputs[key].update(ui_cam)
 
-    fixed_mouse_pos = screen.control.mouse_pos()
-    fixed_mouse_pos = (fixed_mouse_pos[0] - level_cam.position.list[0],fixed_mouse_pos[1] - level_cam.position.list[1])
-
-    text_surfaces[selected_sprite_text_surface_index][0] = KTFL.gui.get_text_surf("???")
-    for sprite in current_level.sprites:
-        if sprite.is_point_in_sprite(fixed_mouse_pos):
-            text_surfaces[selected_sprite_text_surface_index][0] = KTFL.gui.get_text_surf(str(sprite.id))
-            if screen.control.mouse_button(1) == "down":
+    mouse_pos = Vector2(*screen.control.mouse_pos(level_cam))
+    if selected_sprite:
+        text_surfaces[selected_sprite_text_surface_index][0] = KTFL.gui.get_text_surf(f"Sprite ID: {selected_sprite.id}")
+    else:
+        text_surfaces[selected_sprite_text_surface_index][0] = KTFL.gui.get_text_surf("Sprite ID: None")
+    if screen.control.mouse_button(1) == "down":
+        print(mouse_pos-level_cam.sprite_offset)
+        for sprite in current_level.sprites:
+            print(sprite.is_point_in_sprite(mouse_pos-level_cam.sprite_offset), mouse_pos-level_cam.sprite_offset)
+            if sprite.is_point_in_sprite(mouse_pos-level_cam.sprite_offset):
+                print("clicked")
                 selected_sprite = sprite
-                selected_sprite_offset = Vector2(fixed_mouse_pos[0],fixed_mouse_pos[1]) - sprite.position
-        if screen.control.mouse_button(1) == "held" and selected_sprite:
-            selected_sprite.set_position(Vector2(fixed_mouse_pos[0] - selected_sprite_offset.x, fixed_mouse_pos[1] - selected_sprite_offset.y))
+                selected_sprite_offset = mouse_pos - level_cam.sprite_offset - sprite.position
+                update_level_cam()
+    elif screen.control.mouse_button(1) == "held" and selected_sprite:
+        selected_sprite.set_position(mouse_pos-level_cam.sprite_offset-selected_sprite_offset)
+        print("held", mouse_pos-level_cam.sprite_offset-selected_sprite_offset)
+        update_level_cam()
+    elif not screen.control.mouse_button(1):
+        selected_sprite = None
 
     #draw_grid(level_cam)
 
@@ -185,5 +194,4 @@ update_level_cam()
 
 while True:
     update_menu()
-    update_level_cam()
     screen.update()

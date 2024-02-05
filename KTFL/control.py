@@ -84,8 +84,12 @@ class Input:
     def mouse_pos(self, camera=None):
         if camera:
             screen_size = camera.display.surface.get_size()
-            xcoeff = camera.size.x / screen_size[0]
-            ycoeff = camera.size.y / screen_size[1]
+            if camera.display_size:
+                xcoeff = camera.size.x / camera.display_size[0]
+                ycoeff = camera.size.y / camera.display_size[1]
+            else:
+                xcoeff = camera.size.x / screen_size[0]
+                ycoeff = camera.size.y / screen_size[1]
             return [self.log["mouse"]["position"][0]*xcoeff-camera.position.x, self.log["mouse"]["position"][1]*ycoeff-camera.position.y]
         else:
             return self.log["mouse"]["position"]

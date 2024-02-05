@@ -14,5 +14,19 @@
   "physics": {
     "objects": []
   },
-  "sprites": []
+  "sprites": [
+    {
+      "id": 1,
+      "position": [
+        352.0,
+        278.0
+      ],
+      "size": [
+        50.0,
+        50.0
+      ],
+      "animated": false,
+      "image_data": "hi"
+    }
+  ]
 }
