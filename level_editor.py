@@ -17,9 +17,12 @@ inputs = {}
 current_level = KTFL.level.Level("level editor/levels/default.json")
 current_level.load()
 
-selected_sprite_text_surface_index = None # i know this sucks but like idc its better than what i was going to do
+zoom = 1
+original_size = Vector2(1300, 900)
+
 selected_sprite = None
 selected_sprite_offset = None
+
 
 def create_menu():
     global selected_sprite_text_surface_index # this is so fucking dumb
@@ -32,52 +35,69 @@ def create_menu():
     inputs["load"] = KTFL.gui.TextInput((75, 30), (20, 50), "level editor/bin/images/input.png", text="default")
     inputs["save"] = KTFL.gui.TextInput((75, 30), (20, 110), "level editor/bin/images/input.png", text="default")
 
-    buttons["up"] = KTFL.gui.Button((30, 30), (100, 170), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
+    buttons["up"] = KTFL.gui.Button((30, 30), (50, 170), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_up, text="U")
-    buttons["left"] = KTFL.gui.Button((30, 30), (70, 200), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
+    buttons["left"] = KTFL.gui.Button((30, 30), (20, 200), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_left, text="L")
-    buttons["down"] = KTFL.gui.Button((30, 30), (100, 230), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
+    buttons["down"] = KTFL.gui.Button((30, 30), (50, 230), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_down, text="D")
-    buttons["right"] = KTFL.gui.Button((30, 30), (130, 200), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
+    buttons["right"] = KTFL.gui.Button((30, 30), (80, 200), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_right, text="R")
 
+    buttons["zoom_in"] = KTFL.gui.Button((75, 30), (150, 180), "level editor/bin/images/button0.png",
+                                      "level editor/bin/images/button1.png",
+                                      function=zoom_in, text="Zoom in")
+    buttons["zoom_out"] = KTFL.gui.Button((75, 30), (150, 220), "level editor/bin/images/button0.png",
+                                      "level editor/bin/images/button1.png",
+                                      function=zoom_out, text="Zoom out")
     inputs["file"] = KTFL.gui.TextInput((150, 30), (100, 300), "level editor/bin/images/input1.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("File"), (20, 305)])
 
-    inputs["position"] = KTFL.gui.TextInput((75, 30), (100, 350), "level editor/bin/images/input.png", text="0,0")
+    inputs["positionx"] = KTFL.gui.TextInput((75, 30), (100, 350), "level editor/bin/images/input.png", text="")
+    inputs["positiony"] = KTFL.gui.TextInput((75, 30), (180, 350), "level editor/bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("Position"), (20, 355)])
 
-    inputs["size"] = KTFL.gui.TextInput((75, 30), (100, 400), "level editor/bin/images/input.png", text="50,50")
+    inputs["sizex"] = KTFL.gui.TextInput((75, 30), (100, 400), "level editor/bin/images/input.png", text="")
+    inputs["sizey"] = KTFL.gui.TextInput((75, 30), (180, 400), "level editor/bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("Size"), (20, 405)])
 
     inputs["id"] = KTFL.gui.TextInput((75, 30), (100, 450), "level editor/bin/images/input.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("ID"), (20, 455)])
-    
-    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (100, 500), "level editor/bin/images/input.png", text="16")
-    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (180, 500), "level editor/bin/images/input.png", text="16")
-    text_surfaces.append([KTFL.gui.get_text_surf("Grid"), (20, 505)])
 
-    inputs["tag"] = KTFL.gui.TextInput((150, 30), (100, 550), "level editor/bin/images/input1.png", text="")
-    text_surfaces.append([KTFL.gui.get_text_surf("Tag"), (20, 550)])
+    inputs["tag"] = KTFL.gui.TextInput((150, 30), (100, 500), "level editor/bin/images/input1.png", text="")
+    text_surfaces.append([KTFL.gui.get_text_surf("Tag"), (20, 505)])
 
-    buttons["create"] = KTFL.gui.Button((75, 30), (200, 350), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
+    buttons["create"] = KTFL.gui.Button((75, 30), (20, 540), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                       function=create_sprite, text="Create")
-    buttons["edit"] = KTFL.gui.Button((75, 30), (200, 400), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
+    buttons["edit"] = KTFL.gui.Button((75, 30), (100, 540), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                         function=edit_sprite, text="Edit")
-    buttons["delete"] = KTFL.gui.Button((75, 30), (200, 450), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
+    buttons["delete"] = KTFL.gui.Button((75, 30), (180, 540), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                         function=delete_sprite, text="Delete")
 
-    buttons["grid"] = KTFL.gui.Switch((30, 30), (260, 500), "level editor/bin/images/off.png", "level editor/bin/images/on.png")
+    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (100, 610), "level editor/bin/images/input.png", text="")
+    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (180, 610), "level editor/bin/images/input.png", text="")
+    text_surfaces.append([KTFL.gui.get_text_surf("Grid"), (20, 615)])
 
-    text_surfaces.append([KTFL.gui.get_text_surf(f"Sprite ID: None"), (10, 800)])
-    selected_sprite_text_surface_index = len(text_surfaces) - 1
+    buttons["grid"] = KTFL.gui.Switch((30, 30), (260, 610), "level editor/bin/images/off.png", "level editor/bin/images/on.png")
 
     # meta data stuff (tried to center bg inputs)
-    text_surfaces.append([KTFL.gui.get_text_surf("Background color"), (30, 600)])
-    inputs["backgroundr"] = KTFL.gui.TextInput((75, 30), (30 , 625), "level editor/bin/images/input.png", text="200")
-    inputs["backgroundg"] = KTFL.gui.TextInput((75, 30), (110, 625), "level editor/bin/images/input.png", text="200")
-    inputs["backgroundb"] = KTFL.gui.TextInput((75, 30), (190, 625), "level editor/bin/images/input.png", text="200")
+    text_surfaces.append([KTFL.gui.get_text_surf("Level meta"), (20, 670)])
 
+    text_surfaces.append([KTFL.gui.get_text_surf("Name"), (20, 700)])
+    inputs["name"] = KTFL.gui.TextInput((150, 30), (102, 695), "level editor/bin/images/input1.png", text=current_level.meta["name"])
+
+    text_surfaces.append([KTFL.gui.get_text_surf("Size"), (20, 740)])
+    inputs["levelx"] = KTFL.gui.TextInput((75, 30), (100, 735), "level editor/bin/images/input.png", text=str(current_level.meta["size"][0]))
+    inputs["levely"] = KTFL.gui.TextInput((75, 30), (180, 735), "level editor/bin/images/input.png",
+                                        text=str(current_level.meta["size"][1]))
+    text_surfaces.append([KTFL.gui.get_text_surf("Background "), (20, 775)])
+    inputs["backgroundr"] = KTFL.gui.TextInput((75, 30), (20, 795), "level editor/bin/images/input.png", text="200")
+    inputs["backgroundg"] = KTFL.gui.TextInput((75, 30), (100, 795), "level editor/bin/images/input.png", text="200")
+    inputs["backgroundb"] = KTFL.gui.TextInput((75, 30), (180, 795), "level editor/bin/images/input.png", text="200")
+
+    buttons["meta"] = KTFL.gui.Button((75, 30), (180, 840), "level editor/bin/images/button0.png",
+                                        "level editor/bin/images/button1.png",
+                                        function=update_meta, text="Set")
     # buttons["debug"] = KTFL.gui.Button((75, 30), (120, 750), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
     #                                   function=testing_shit, text="DEBUG")
 
@@ -122,11 +142,33 @@ def save_level():
     # current_level.load()
 
 
+def zoom_out():
+    global zoom
+    zoom += 0.1
+    level_cam.set_size(Vector2(original_size.x*zoom, original_size.y*zoom))
+
+
+def zoom_in():
+    global zoom
+    zoom -= 0.1
+    if zoom < 0.2:
+        zoom = 0.1
+    level_cam.set_size(Vector2(original_size.x*zoom, original_size.y*zoom))
+
+
+def update_meta():
+    name = inputs["name"].text
+    try:
+        size = [int(inputs["levelx"].text), int(inputs["levely"].text)]
+    except TypeError:
+        size = current_level.meta["size"]
+    try:
+        background = [int(inputs["backgroundr"].text), int(inputs["backgroundg"].text), int(inputs["backgroundb"].text)]
+    except TypeError:
+        background = current_level.meta["background"]
+    current_level.meta = {"name": name, "size": size, "background": background}
+
 def update_level_cam():
-    # safeguards to avoid 1. float from throwing error and 2. invalid colors
-    current_level.meta["background"][0] = float("0" + inputs["backgroundr"].text[0:3])
-    current_level.meta["background"][1] = float("0" + inputs["backgroundg"].text[0:3])
-    current_level.meta["background"][2] = float("0" + inputs["backgroundb"].text[0:3])
     level_cam.clear(current_level.meta["background"])
     if inputs["gridsnapx"].text and inputs["gridsnapy"].text and buttons["grid"].on:
         draw_grid(level_cam, float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text), pygame.rect.Rect(0, 0, *current_level.meta["size"]))
@@ -137,10 +179,10 @@ def update_level_cam():
         level_cam.draw_to(sprite)
         pos = sprite.top_left + level_cam.sprite_offset
         level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(sprite.id)), position=pos.list)
-        if sprite.tag != "":
+        if sprite.tag:
             tag_text = KTFL.gui.get_text_surf(f"{sprite.tag}")
-            level_cam.surface.blit(tag_text, ((sprite.size.x / 2) - (tag_text.get_size()[0] / 2) + sprite.position.x,
-                                              sprite.size.y - (tag_text.get_size()[1] / 2) + sprite.position.y))
+            level_cam.surface.blit(tag_text, ((sprite.size.x / 2) - (tag_text.get_size()[0] / 2) + sprite.position.x + level_cam.sprite_offset.x,
+                                              sprite.size.y - (tag_text.get_size()[1] / 2) + sprite.position.y + level_cam.sprite_offset.y))
     for rect in current_level.physics_objects:
         pygame.draw.rect(level_cam.surface, (20, 20, 20), (rect.left+level_cam.sprite_offset.x, rect.top+level_cam.sprite_offset.y, rect.w, rect.h), width=3)
 
@@ -157,83 +199,80 @@ def update_menu():
         inputs[key].update(ui_cam)
 
     mouse_pos = Vector2(*screen.control.mouse_pos(level_cam))
-    if selected_sprite:
-        text_surfaces[selected_sprite_text_surface_index][0] = KTFL.gui.get_text_surf(f"Sprite ID: {selected_sprite.id}")
-    else:
-        text_surfaces[selected_sprite_text_surface_index][0] = KTFL.gui.get_text_surf("Sprite ID: None")
 
 # sprite click event
     if screen.control.mouse_button(1) == "down":
+        print(screen.control.mouse_pos(level_cam))
         for sprite in current_level.sprites:
             if sprite.is_point_in_sprite(mouse_pos-level_cam.sprite_offset):
                 selected_sprite = sprite
                 selected_sprite_offset = mouse_pos - level_cam.sprite_offset - sprite.position
                 inputs["file"].text = sprite.image_file
-                inputs["position"].text = f"{str(sprite.position.x)},{str(sprite.position.y)}"
-                inputs["size"].text = f"{str(sprite.size.x)},{str(sprite.size.y)}"
+                inputs["positionx"].text = str(sprite.position.x)
+                inputs["positiony"].text = str(sprite.position.y)
+                inputs["sizex"].text = str(sprite.size.x)
+                inputs["sizey"].text = str(sprite.size.y)
                 inputs["id"].text = str(sprite.id)
                 inputs["tag"].text = sprite.tag
 # sprite drag event
     elif screen.control.mouse_button(1) == "held" and selected_sprite:
-        selected_sprite.set_position(mouse_pos-level_cam.sprite_offset-selected_sprite_offset)
+        selected_sprite.position = mouse_pos-level_cam.sprite_offset-selected_sprite_offset
 # sprite release event
     elif not screen.control.mouse_button(1):
         if selected_sprite:
             if inputs["gridsnapx"].text and inputs["gridsnapy"].text and buttons["grid"].on:
-                new_pos = Vector2(*selected_sprite.position.snap_to_grid(float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text)))
-                selected_sprite.set_position(new_pos)
-            inputs["position"].text = f"{str(selected_sprite.position.x)},{str(selected_sprite.position.y)}"
+                selected_sprite.position = Vector2(*selected_sprite.position.snap_to_grid(float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text)))
+            inputs["positionx"].text = str(selected_sprite.position.x)
+            inputs["positiony"].text = str(selected_sprite.position.y)
             selected_sprite = None
 
 
 def create_sprite():
-    print("new sprite")
-    file = None
-    position = None
-    size = None
-    id = None
-    tag = None
-    did_error = False  # im prob being dumb
+    file = inputs["file"].text
     try:
-        file = inputs["file"].text
-        position = inputs["position"].text.split(",")
-        position = [float(position[0]), float(position[1])]
-        size = inputs["size"].text.split(",")
-        size = [float(size[0]), float(size[1])]
+        position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
+    except (TypeError, IndexError):
+        print("Invalid position try: 'x,y' where x and y are numbers")
+        return
+
+    try:
+        size = [float(inputs["sizex"].text), float(inputs["sizey"].text)]
+    except (TypeError, IndexError):
+        print("Invalid position try: 'x,y' where x and y are numbers")
+        return
+
+    try:
         id = int(inputs["id"].text)
-        tag = inputs["tag"].text
-    except Exception:
-        print("error occurred creating sprite")
-        did_error = True
-    if not did_error:
-        current_level.add_sprite(KTFL.sprite.Sprite(size, position, file, id=id, tag=tag))
+    except TypeError:
+        print("Invalid ID")
+        return
+
+    if current_level.get_sprite_by_id(id):
+        print("Can not have duplicate sprite IDs")
+        return
+
+    tag = inputs["tag"].text
+    current_level.add_sprite(KTFL.sprite.Sprite(size, position, file, id=id, tag=tag))
+
 
 def delete_sprite():
-    try:
-        id = int(inputs["id"].text)
+    id = int(inputs["id"].text)
+    if id:
         current_level.delete_sprite(id)
-    except:
-        print("error deleting sprite")
 
 
 def edit_sprite():
-    try:
-        id = int(inputs["id"].text)
-        sprite = current_level.get_sprite(id)
-        if inputs["position"].text:
-            position = inputs["position"].text.split(",")
-            position = [float(position[0]), float(position[1])]
-            sprite.set_position(position)
-        if inputs["size"].text:
-            size = inputs["size"].text.split(",")
-            size = [float(size[0]), float(size[1])]
-            sprite.set_size(size)
-        if inputs["file"].text:
-            sprite.set_image(inputs["file"].text)
-        if inputs["tag"].text:
-            sprite.set_tag(inputs["tag"].text)
-    except:
-        print("error editing sprite")
+    id = int(inputs["id"].text)
+    sprite = current_level.get_sprite_by_id(id)
+    if inputs["positionx"].text and inputs["positiony"]:
+        position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
+        sprite.position = position
+    if inputs["sizex"].text and inputs["sizey"].text:
+        size = [float(inputs["sizex"].text), float(inputs["sizey"].text)]
+        sprite.size = size
+    if inputs["file"].text:
+        sprite.image = inputs["file"].text
+    sprite.tag = inputs["tag"].text
 
 
 create_menu()

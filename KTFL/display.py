@@ -66,3 +66,7 @@ class Camera:
 
     def clear(self, colour=(0, 0, 0)):
         self.surface.fill(colour)
+
+    def set_size(self, new):
+        self.size = new
+        self.surface = pygame.surface.Surface(self.size.list, pygame.SRCALPHA)

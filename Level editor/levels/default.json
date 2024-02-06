@@ -1,16 +1,15 @@
 {
   "meta": {
+    "name": "example",
     "size": [
-      1000,
-      1000
+      320,
+      180
     ],
     "background": [
-      200.0,
-      200.0,
-      200.0
-    ],
-    "name": "example",
-    "image_folder": "bin/images/"
+      200,
+      200,
+      200
+    ]
   },
   "physics": {
     "objects": []
@@ -19,16 +18,16 @@
     {
       "id": 1,
       "position": [
-        0.0,
-        0.0
+        36.0,
+        36.0
       ],
       "size": [
-        50.0,
-        50.0
+        32.0,
+        32.0
       ],
       "animated": false,
-      "image_data": "bin/images/bin/images/hi",
-      "tag": "I'm Tagged!"
+      "image_data": "img",
+      "tag": ""
     }
   ]
 }

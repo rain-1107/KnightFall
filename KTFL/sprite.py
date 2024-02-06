@@ -9,53 +9,27 @@ class Sprite:
     def __init__(self, size, position, image=None, colour=(255, 255, 255), centered=False, id=0, tag="", level=None):
         self.id = id
         self.centered = centered
-        self.size = Vector2.list_to_vec(size)
+        self._size = Vector2.list_to_vec(size)
         self.top_left = Vector2.list_to_vec(position)
         self.image_file = image
-        self.tag = tag
+        self._tag = tag
         self.level = level
 
         if image:
             try:
-                self.image = pygame.image.load(image).convert_alpha()
+                self._image = pygame.image.load(image).convert_alpha()
             except FileNotFoundError:
                 _surf = pygame.surface.Surface(self.size.list)
                 _surf.fill((random.randint(0, 255), random.randint(0, 255),random.randint(0, 255)))
                 text = get_text_surf(f"{image}")
                 _surf.blit(text, ((self.size.x / 2) - (text.get_size()[0] / 2), (self.size.y / 2) - (text.get_size()[1] / 2)))
-                self.image = _surf.convert()
+                self._image = _surf.convert()
         else:
-            self.image = pygame.surface.Surface(self.size.list)
-            self.image.fill(colour)
-
-    def set_tag(self, tag):  # TODO : encapsulate this variable (note to leo : https://stackoverflow.com/questions/48391851/call-python-method-on-class-attribute-change)
-        if self.level:
-            self.level.tags_index[self.tag][self.id] = None
-            self.tag = tag
-            self.level.tags_index[self.tag][self.id] = self
-        else:
-            self.tag = tag
+            self._image = pygame.surface.Surface(self.size.list)
+            self._image.fill(colour)
 
     def draw_to(self, surf: pygame.surface.Surface):
         surf.blit(self.image, self.position.list)
-
-    def set_position(self, new):
-        self.top_left = Vector2.list_to_vec(new)
-
-    def set_size(self, new):
-        self.size = Vector2.list_to_vec(new)
-
-    def set_image(self, file):
-        self.image_file = file
-        try:
-            self.image = pygame.image.load(self.image_file).convert_alpha()
-        except FileNotFoundError:
-            _surf = pygame.surface.Surface(self.size.list)
-            _surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-            text = get_text_surf(f"{self.image_file}")
-            _surf.blit(text,
-                       ((self.size.x / 2) - (text.get_size()[0] / 2), (self.size.y / 2) - (text.get_size()[1] / 2)))
-            self.image = _surf.convert()
 
     def is_point_in_sprite(self, point):
         point = Vector2.list_to_vec(point)
@@ -63,16 +37,61 @@ class Sprite:
             if self.top_left.y < point.y < self.top_left.y + self.size.y:
                 return True
         return False
-    
+
     @property
-    def position(self):
+    def tag(self):
+        return self._tag
+
+    @tag.setter
+    def tag(self, new):
+        self._tag = new
+
+    @property
+    def image(self):
+        return self._image
+
+    @image.setter
+    def image(self, new):
+        self.image_file = new
+        try:
+            self._image = pygame.image.load(self.image_file).convert_alpha()
+        except FileNotFoundError:
+            _surf = pygame.surface.Surface(self.size.list)
+            _surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+            text = get_text_surf(f"{self.image_file}")
+            _surf.blit(text,
+                       ((self.size.x / 2) - (text.get_size()[0] / 2), (self.size.y / 2) - (text.get_size()[1] / 2)))
+            self._image = _surf.convert()
+
+    @property
+    def size(self) -> Vector2:
+        return self._size
+
+    @size.setter
+    def size(self, new):
+        self._size = Vector2.list_to_vec(new)
+
+    @property
+    def position(self) -> Vector2:
         if self.centered:
             return Vector2(self.top_left.x - (self.size.x / 2), self.top_left.y)
         return self.top_left
 
+    @position.setter
+    def position(self, new):
+        if self.centered:
+            self.centre = new
+            return
+        self.top_left = Vector2.list_to_vec(new)
+
     @property
-    def centre(self):
+    def centre(self) -> Vector2:
         return Vector2(self.top_left.x - (self.size.x / 2), self.top_left.y)
+
+    @centre.setter
+    def centre(self, new):
+        _centre = Vector2.list_to_vec(new)
+        self.top_left.set(Vector2(_centre.x-self.size.x/2, _centre.y-self.size.y/2))
 
 
 class AnimatedSprite(Sprite):

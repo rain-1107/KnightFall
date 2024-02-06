@@ -13,7 +13,6 @@ class Level:
         self.sprites = []
         self.physics_data = {}
         self.physics_objects = []
-        self.tags_index = {"": {}}
 
     def load(self):
         try:
@@ -29,46 +28,33 @@ class Level:
                 image_data = sprite["image_data"]
                 for state in image_data:
                     for i in range(len(image_data[state]["images"])):
-                        image_data[state]["images"][i] = self.meta["image_folder"] + image_data[state]["images"][i]
+                        image_data[state]["images"][i] = image_data[state]["images"][i]
                 _sprite = AnimatedSprite(sprite["size"], sprite["position"], sprite["image_data"], id=sprite["id"])
             else:
                 _sprite = Sprite(sprite["size"], sprite["position"],
-                                         self.meta["image_folder"] + sprite["image_data"], id=sprite["id"], tag=sprite["tag"])
-            # self.sprites.append(_sprite) why did you do this ryan
+                                 sprite["image_data"], id=sprite["id"], tag=sprite["tag"])
             self.add_sprite(_sprite)
         for object in self.physics_data["objects"]:
             if object["static"] == True:
                 self.physics_objects.append(pygame.rect.Rect(*object["rect"]))
 
-    def find_sprites_with_tag(self, tag):
-        if tag in self.tags_index:
-            return self.tags_index[tag]
-        return {}
-
-    def find_first_sprite_with_tag(self, tag):  # might be a bit slower than indexing but we cant
-        if not (tag in self.tags_index):
-            return
-        for key in self.tags_index[tag]:
-            sprite = self.tags_index[tag][key]
-            if sprite:
-                return sprite
-        return None
+    def get_sprite_by_tag(self, tag):
+        _list = []
+        for sprite in self.sprites:
+            if sprite.tag == tag:
+                _list.append(sprite)
+        return _list
 
     def add_sprite(self, sprite: Sprite):
         self.sprites.append(sprite)
-        if not (sprite.tag in self.tags_index):
-            self.tags_index.update({sprite.tag: {}})  # could be a list IDK (pycharm stop correcting me)
-        self.tags_index[sprite.tag][sprite.id] = sprite
         sprite.level = self
 
     def delete_sprite(self, id):
-        sprites = self.sprites.copy()
-        for sprite in sprites:
-            if sprite.id == id:
-                sprite.level = None
-                self.sprites.remove(sprite)
+        _sprite = self.get_sprite_by_id(id)
+        if _sprite:
+            self.sprites.remove(_sprite)
 
-    def get_sprite(self, id):
+    def get_sprite_by_id(self, id):
         for sprite in self.sprites:
             if sprite.id == id:
                 return sprite
@@ -76,7 +62,6 @@ class Level:
 
     def add_object(self, rect, id=-1, static=True):
         self.physics_objects.append(rect)
-        # self.raw["physics"]["objects"].append({"rect": [rect.left, rect.top, rect.width, rect.height]})
 
     def update_raw(self):
         self.physics_data["objects"] = []
