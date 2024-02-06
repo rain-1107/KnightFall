@@ -57,7 +57,7 @@ class Input:
                     self.log["actions"].pop(self.get_action(key))
                 except KeyError:
                     pass
-        for event in pygame.event.get(eventtype=[pygame.KEYUP, pygame.KEYDOWN]):
+        for event in pygame.event.get(eventtype=pygame.KEYDOWN):
             if event.type == pygame.KEYDOWN:
                 self.log["actions"][self.get_action(pygame.key.name(event.key))] = "down"
                 self.log["keys"][event.key] = ["down", event.mod]
