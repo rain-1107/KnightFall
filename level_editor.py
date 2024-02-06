@@ -34,7 +34,7 @@ def create_menu():
     buttons["save"] = KTFL.gui.Button((75, 30), (120, 110), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
                                       function=save_level, text="Save")
     inputs["load"] = KTFL.gui.TextInput((75, 30), (20, 50), "level editor/bin/images/input.png", text="default")
-    inputs["save"] = KTFL.gui.TextInput((75, 30), (20, 110), "level editor/bin/images/input.png", text="default")
+    inputs["save"] = KTFL.gui.TextInput((75, 30), (20, 110), "level editor/bin/images/input.png", text="")
 
     buttons["up"] = KTFL.gui.Button((30, 30), (50, 170), "level editor/bin/images/2button0.png", "level editor/bin/images/2button1.png",
                                     function=move_cam_up, text="U")
@@ -141,6 +141,7 @@ def save_level():
     current_level.update_raw()
     json.dump(current_level.raw, f, indent=2)
     current_level.file = "levels/"+inputs["save"].text+".json"
+    inputs["load"].text = inputs["save"].text
     # current_level.load()
 
 def zoom_out():
@@ -169,23 +170,29 @@ def update_meta():
         background = current_level.meta["background"]
     current_level.meta = {"name": name, "size": size, "background": background}
 
+
 def update_level_cam():
     level_cam.clear(current_level.meta["background"])
     if inputs["gridsnapx"].text and inputs["gridsnapy"].text and buttons["grid"].on:
         draw_grid(level_cam, float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text), pygame.rect.Rect(0, 0, *current_level.meta["size"]))
 
     pygame.draw.rect(level_cam.surface, (0, 0, 0), (
-    level_cam.sprite_offset.x, level_cam.sprite_offset.y, current_level.meta["size"][0], current_level.meta["size"][1]), width=2)
+    level_cam.sprite_offset.x, level_cam.sprite_offset.y, current_level.meta["size"][0]+1, current_level.meta["size"][1]+1), width=2)
     for sprite in current_level.sprites:
         level_cam.draw_to(sprite)
         pos = sprite.top_left + level_cam.sprite_offset
+        pos.x += 5
+        pos.y += 5
         level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(sprite.id)), position=pos.list)
         if sprite.tag:
             tag_text = KTFL.gui.get_text_surf(f"{sprite.tag}")
             level_cam.surface.blit(tag_text, ((sprite.size.x / 2) - (tag_text.get_size()[0] / 2) + sprite.position.x + level_cam.sprite_offset.x,
                                               sprite.size.y - (tag_text.get_size()[1] / 2) + sprite.position.y + level_cam.sprite_offset.y))
-    for rect in current_level.physics_objects:
-        pygame.draw.rect(level_cam.surface, (20, 20, 20), (rect.left+level_cam.sprite_offset.x, rect.top+level_cam.sprite_offset.y, rect.w, rect.h), width=3)
+    for obj in current_level.physics_objects:
+        rect = obj.rect
+        pos = [rect.right+level_cam.sprite_offset.x-15, rect.top+level_cam.sprite_offset.y+5]
+        pygame.draw.rect(level_cam.surface, (255, 255, 255), (rect.left+level_cam.sprite_offset.x, rect.top+level_cam.sprite_offset.y, rect.w, rect.h), width=1)
+        level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(obj.id), colour=(255, 255, 255)), position=pos)
 
 
 def update_menu():
@@ -214,7 +221,6 @@ def update_menu():
 
 # sprite click event
     if screen.control.mouse_button(1) == "down":
-        print(screen.control.mouse_pos(level_cam))
         for sprite in current_level.sprites:
             if sprite.is_point_in_sprite(mouse_pos-level_cam.sprite_offset):
                 selected_sprite = sprite
@@ -271,11 +277,15 @@ def delete_sprite():
     id = int(inputs["id"].text)
     if id:
         current_level.delete_sprite(id)
+        current_level.delete_object(id)
 
 
 def edit_sprite():
     id = int(inputs["id"].text)
     sprite = current_level.get_sprite_by_id(id)
+    if not sprite:
+        edit_object()
+        return
     if inputs["positionx"].text and inputs["positiony"]:
         position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
         sprite.position = position
@@ -285,6 +295,25 @@ def edit_sprite():
     if inputs["file"].text:
         sprite.image = inputs["file"].text
     sprite.tag = inputs["tag"].text
+    if sprite.tag == "object":
+        rect = pygame.rect.Rect(sprite.position.x, sprite.position.y, sprite.size.x, sprite.size.y)
+        id = sprite.id
+        current_level.delete_sprite(sprite.id)
+        current_level.add_object(rect, id)
+
+
+def edit_object():
+    id = int(inputs["id"].text)
+    obj = current_level.get_object_by_id(id)
+    if not obj:
+        return
+    position = [obj.rect.x, obj.rect.y]
+    if inputs["positionx"].text and inputs["positiony"]:
+        position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
+    size = [obj.rect.w, obj.rect.h]
+    if inputs["sizex"].text and inputs["sizey"].text:
+        size = [float(inputs["sizex"].text), float(inputs["sizey"].text)]
+    obj.rect.update(*position, *size)
 
 
 create_menu()

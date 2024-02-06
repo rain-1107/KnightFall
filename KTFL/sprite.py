@@ -127,7 +127,7 @@ class AnimatedSprite(Sprite):
                     self.index = 0
                 else:
                     self.change_state(self.previous_state)
-            self.image = self.image_data[self.state]["images"][self.index]
+            self._image = self.image_data[self.state]["images"][self.index]
 
     def change_state(self, new_state):
         self.previous_state = self.state

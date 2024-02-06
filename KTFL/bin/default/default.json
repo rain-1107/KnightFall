@@ -1,0 +1,116 @@
+{
+  "meta": {
+    "name": "example",
+    "size": [
+      640,
+      360
+    ],
+    "background": [
+      200,
+      200,
+      200
+    ]
+  },
+  "physics": {
+    "objects": [
+      {
+        "rect": [
+          0,
+          0,
+          50,
+          360
+        ],
+        "static": true,
+        "id": 1
+      },
+      {
+        "rect": [
+          48,
+          309,
+          540,
+          50
+        ],
+        "static": true,
+        "id": 6
+      },
+      {
+        "rect": [
+          48,
+          0,
+          540,
+          50
+        ],
+        "static": true,
+        "id": 7
+      },
+      {
+        "rect": [
+          588,
+          0,
+          50,
+          360
+        ],
+        "static": true,
+        "id": 8
+      }
+    ]
+  },
+  "sprites": [
+    {
+      "id": 2,
+      "position": [
+        0.0,
+        0.0
+      ],
+      "size": [
+        50.0,
+        360.0
+      ],
+      "animated": false,
+      "image_data": "img",
+      "tag": ""
+    },
+    {
+      "id": 3,
+      "position": [
+        588.0,
+        0.0
+      ],
+      "size": [
+        50.0,
+        360.0
+      ],
+      "animated": false,
+      "image_data": "img",
+      "tag": ""
+    },
+    {
+      "id": 4,
+      "position": [
+        48.0,
+        0.0
+      ],
+      "size": [
+        540.0,
+        50.0
+      ],
+      "animated": false,
+      "image_data": "img",
+      "tag": ""
+    },
+    {
+      "id": 5,
+      "position": [
+        48.0,
+        309.0
+      ],
+      "size": [
+        540.0,
+        50.0
+      ],
+      "animated": false,
+      "image_data": "img",
+      "tag": ""
+    }
+  ]
+}

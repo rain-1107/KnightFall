@@ -21,15 +21,15 @@ class OverheadPlayer:
         self.size = Vector2.list_to_vec(self.data["size"])
         self.position = Vector2.list_to_vec(self.data["position"])
         self.rect = pygame.rect.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
-        self.sprite = KTFL.sprite.AnimatedSprite(self.size, self.position, self.data["image_data"], centered = True)
+        self.sprite = KTFL.sprite.AnimatedSprite(self.size, self.position, self.data["image_data"], centered=True)
         self.speed = 300
         self.level = None
 
     def update(self, camera, dt=1/60):
+        self.move(camera.display.control, dt)
+        self.sprite.centre = self.centre
         self.sprite.update_animation(dt)
         self.sprite.draw_to(camera.surface)
-        pygame.draw.rect(camera.surface, (0, 0, 0), self.rect, width=1)
-        self.move(camera.display.control, dt)
 
     def move(self, control: KTFL.control.Input, dt):
         velocity = Vector2(0, 0)
@@ -51,14 +51,14 @@ class OverheadPlayer:
 
     def check_collision(self, vector):
         self.rect.update(self.rect.left+vector.x, self.rect.top, self.rect.width, self.rect.height)
-        hit_list = collision_list(self.rect, self.level.physics_objects)
+        hit_list = collision_list(self.rect, self.level.physics_rects)
         for rect in hit_list:
             if vector.x > 0:
                 self.rect.right = rect.left
             if vector.x < 0:
                 self.rect.left = rect.right
         self.rect.update(self.rect.left, self.rect.top+vector.y, self.rect.width, self.rect.height)
-        hit_list = collision_list(self.rect, self.level.physics_objects)
+        hit_list = collision_list(self.rect, self.level.physics_rects)
         for rect in hit_list:
             if vector.y > 0:
                 self.rect.bottom = rect.top
@@ -69,3 +69,7 @@ class OverheadPlayer:
 
     def add_to_level(self, level):
         self.level = level
+
+    @property
+    def centre(self):
+        return Vector2(self.position.x + self.size.x/2, self.position.y + self.size.y / 2)

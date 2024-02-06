@@ -11,3 +11,4 @@ import KTFL.level
 import KTFL.sprite
 import KTFL.util
 import KTFL.entities
+import KTFL.particle

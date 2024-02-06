@@ -21,7 +21,9 @@ class Vector2:
         return Vector2(self.x-other.x, self.y-other.y)
 
     def __mul__(self, other):
-        return Vector2(self.x*other.x, self.y*other.y)
+        if type(other) == Vector2:
+            return Vector2(self.x*other.x, self.y*other.y)
+        return Vector2(self.x*other, self.y*other)
 
     def __truediv__(self, other):
         return Vector2(self.x/other.x, self.y/other.y)

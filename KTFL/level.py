@@ -35,8 +35,7 @@ class Level:
                                  sprite["image_data"], id=sprite["id"], tag=sprite["tag"])
             self.add_sprite(_sprite)
         for object in self.physics_data["objects"]:
-            if object["static"] == True:
-                self.physics_objects.append(pygame.rect.Rect(*object["rect"]))
+            self.physics_objects.append(Object(pygame.rect.Rect(*object["rect"]), object["id"], object["static"]))
 
     def get_sprite_by_tag(self, tag):
         _list = []
@@ -54,19 +53,38 @@ class Level:
         if _sprite:
             self.sprites.remove(_sprite)
 
+
+    def delete_object(self, id):
+        _object = self.get_object_by_id(id)
+        if _object:
+            self.physics_objects.remove(_object)
+
     def get_sprite_by_id(self, id):
         for sprite in self.sprites:
             if sprite.id == id:
                 return sprite
         return None
 
-    def add_object(self, rect, id=-1, static=True):
-        self.physics_objects.append(rect)
+    def add_object(self, rect, id, static=True):
+        self.physics_objects.append(Object(rect, id, static))
+
+    def get_object_by_id(self, id):
+        for object in self.physics_objects:
+            if object.id == id:
+                return object
+        return None
+
+    @property
+    def physics_rects(self):
+        _list = []
+        for obj in self.physics_objects:
+            _list.append(obj.rect)
+        return _list
 
     def update_raw(self):
         self.physics_data["objects"] = []
         for object in self.physics_objects:
-            self.physics_data["objects"].append({"rect": [object.left, object.top, object.width, object.height], "static": False, "sprite_id": -1})
+            self.physics_data["objects"].append({"rect": [object.rect.left, object.rect.top, object.rect.width, object.rect.height], "static": object.static, "id": object.id})
 
         sprite_data = []
         for sprite in self.sprites:
@@ -79,3 +97,10 @@ class Level:
                     {"id": sprite.id, "position": sprite.top_left.list, "size": sprite.size.list, "animated": False,
                      "image_data": sprite.image_file, "tag": sprite.tag})
         self.raw = {"meta": self.meta, "physics": self.physics_data, "sprites": sprite_data}
+
+
+class Object:
+    def __init__(self, rect, id, static):
+        self.rect = rect
+        self.id = id
+        self.static = static
