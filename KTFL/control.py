@@ -21,7 +21,17 @@ class Input:
                 self.log["input_type"] = None
         self.mouse_pressed = pygame.mouse.get_pressed(5)
         self.prev_mouse = self.mouse_pressed
-        self.log["mouse"] = {"position": pygame.mouse.get_pos(), "buttons": self.mouse_pressed}
+        new_mouse = []  # consistent implementation of self.log["mouse"] ..... (revert if u want but pycharm wouldn't shut up) (omg it's still complaining pls help)
+        for i, button in enumerate(self.mouse_pressed):
+            if button:
+                if self.prev_mouse[i]:
+                    new_mouse.append("held")
+                else:
+                    new_mouse.append("down")
+            else:
+                new_mouse.append(False)
+        self.log["mouse"] = {"position": pygame.mouse.get_pos(), "buttons": new_mouse,
+                             "scroll": 0, "scroll_delta": 0}
 
     def load_controls(self, config, type="keyboard"):
         try:
@@ -60,7 +70,16 @@ class Input:
                     new_mouse.append("down")
             else:
                 new_mouse.append(False)
-        self.log["mouse"] = {"position": pygame.mouse.get_pos(), "buttons": new_mouse}
+        old_scroll = self.log["mouse"]["scroll"]
+        new_scroll = self.log["mouse"]["scroll"]
+        for event in pygame.event.get(eventtype=[pygame.MOUSEWHEEL]):
+            new_scroll = new_scroll+event.y
+        if new_scroll > 100:
+            new_scroll = 100
+        elif new_scroll < -100:
+            new_scroll = -100
+        self.log["mouse"] = {"position": pygame.mouse.get_pos(), "buttons": new_mouse, "scroll": new_scroll,
+                             "scroll_delta": old_scroll-new_scroll}
         self.prev_mouse = self.mouse_pressed
 
     def get_action(self, key):
@@ -99,3 +118,6 @@ class Input:
             return self.log["mouse"]["buttons"][n-1]
         except KeyError:
             return False
+
+    def mouse_scroll(self):
+        return self.log["mouse"]["scroll"], self.log["mouse"]["scroll_delta"]

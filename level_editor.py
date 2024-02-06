@@ -18,6 +18,7 @@ current_level = KTFL.level.Level("level editor/levels/default.json")
 current_level.load()
 
 zoom = 1
+zoominfo = KTFL.gui.get_text_surf(f"Zoom amount : {zoom}")
 original_size = Vector2(1300, 900)
 
 selected_sprite = None
@@ -50,6 +51,7 @@ def create_menu():
     buttons["zoom_out"] = KTFL.gui.Button((75, 30), (150, 220), "level editor/bin/images/button0.png",
                                       "level editor/bin/images/button1.png",
                                       function=zoom_out, text="Zoom out")
+
     inputs["file"] = KTFL.gui.TextInput((150, 30), (100, 300), "level editor/bin/images/input1.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("File"), (20, 305)])
 
@@ -96,8 +98,8 @@ def create_menu():
     inputs["backgroundb"] = KTFL.gui.TextInput((75, 30), (180, 795), "level editor/bin/images/input.png", text="200")
 
     buttons["meta"] = KTFL.gui.Button((75, 30), (180, 840), "level editor/bin/images/button0.png",
-                                        "level editor/bin/images/button1.png",
-                                        function=update_meta, text="Set")
+                                      "level editor/bin/images/button1.png", function=update_meta, text="Set")
+
     # buttons["debug"] = KTFL.gui.Button((75, 30), (120, 750), "level editor/bin/images/button0.png", "level editor/bin/images/button1.png",
     #                                   function=testing_shit, text="DEBUG")
 
@@ -140,7 +142,6 @@ def save_level():
     json.dump(current_level.raw, f, indent=2)
     current_level.file = "levels/"+inputs["save"].text+".json"
     # current_level.load()
-
 
 def zoom_out():
     global zoom
@@ -188,7 +189,7 @@ def update_level_cam():
 
 
 def update_menu():
-    global selected_sprite, selected_sprite_offset  # argh
+    global selected_sprite, selected_sprite_offset, zoominfo  # argh
     pygame.draw.rect(ui_cam.surface, (255, 255, 255), (0, 0, 300, 900))
     pygame.draw.rect(ui_cam.surface, (0, 0, 0), (0, 0, 300, 900), width=3)
     for surf in text_surfaces:
@@ -199,6 +200,17 @@ def update_menu():
         inputs[key].update(ui_cam)
 
     mouse_pos = Vector2(*screen.control.mouse_pos(level_cam))
+
+    # this might be a bad way, but it's still a way
+    if screen.control.mouse_scroll()[1] > 0:
+        zoom_out()
+    elif screen.control.mouse_scroll()[1] < 0:
+        zoom_in()
+
+    # makes ugly background idk how to fix maybe draw old text and then new or smth icba
+    pygame.draw.rect(ui_cam.surface, (current_level.meta["background"]),(ui_cam.size.x-zoominfo.get_width(), ui_cam.size.y-zoominfo.get_height(),zoominfo.get_width(),zoominfo.get_height()))
+    zoominfo = KTFL.gui.get_text_surf("Zoom amount : {:.2f}".format(zoom))
+    ui_cam.surface.blit(zoominfo, (ui_cam.size.x-zoominfo.get_width(), ui_cam.size.y-zoominfo.get_height()))
 
 # sprite click event
     if screen.control.mouse_button(1) == "down":
