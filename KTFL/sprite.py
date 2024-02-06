@@ -6,12 +6,15 @@ from copy import deepcopy
 
 
 class Sprite:
-    def __init__(self, size, position, image=None, colour=(255, 255, 255), centered=False, id=0):
+    def __init__(self, size, position, image=None, colour=(255, 255, 255), centered=False, id=0, tag="", level=None):
         self.id = id
         self.centered = centered
         self.size = Vector2.list_to_vec(size)
         self.top_left = Vector2.list_to_vec(position)
         self.image_file = image
+        self.tag = tag
+        self.level = level
+
         if image:
             try:
                 self.image = pygame.image.load(image).convert_alpha()
@@ -24,6 +27,14 @@ class Sprite:
         else:
             self.image = pygame.surface.Surface(self.size.list)
             self.image.fill(colour)
+
+    def set_tag(self, tag):  # TODO : encapsulate this variable (note to leo : https://stackoverflow.com/questions/48391851/call-python-method-on-class-attribute-change)
+        if self.level:
+            self.level.tags_index[self.tag][self.id] = None
+            self.tag = tag
+            self.level.tags_index[self.tag][self.id] = self
+        else:
+            self.tag = tag
 
     def draw_to(self, surf: pygame.surface.Surface):
         surf.blit(self.image, self.position.list)

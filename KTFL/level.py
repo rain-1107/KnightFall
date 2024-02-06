@@ -13,6 +13,7 @@ class Level:
         self.sprites = []
         self.physics_data = {}
         self.physics_objects = []
+        self.tags_index = {"": {}}
 
     def load(self):
         try:
@@ -32,19 +33,39 @@ class Level:
                 _sprite = AnimatedSprite(sprite["size"], sprite["position"], sprite["image_data"], id=sprite["id"])
             else:
                 _sprite = Sprite(sprite["size"], sprite["position"],
-                                         self.meta["image_folder"] + sprite["image_data"], id=sprite["id"])
-            self.sprites.append(_sprite)
+                                         self.meta["image_folder"] + sprite["image_data"], id=sprite["id"], tag=sprite["tag"])
+            # self.sprites.append(_sprite) why did you do this ryan
+            self.add_sprite(_sprite)
         for object in self.physics_data["objects"]:
             if object["static"] == True:
                 self.physics_objects.append(pygame.rect.Rect(*object["rect"]))
 
+    def find_sprites_with_tag(self, tag):
+        if tag in self.tags_index:
+            return self.tags_index[tag]
+        return {}
+
+    def find_first_sprite_with_tag(self, tag):  # might be a bit slower than indexing but we cant
+        if not (tag in self.tags_index):
+            return
+        for key in self.tags_index[tag]:
+            sprite = self.tags_index[tag][key]
+            if sprite:
+                return sprite
+        return None
+
     def add_sprite(self, sprite: Sprite):
         self.sprites.append(sprite)
+        if not (sprite.tag in self.tags_index):
+            self.tags_index.update({sprite.tag: {}})  # could be a list IDK (pycharm stop correcting me)
+        self.tags_index[sprite.tag][sprite.id] = sprite
+        sprite.level = self
 
     def delete_sprite(self, id):
         sprites = self.sprites.copy()
         for sprite in sprites:
             if sprite.id == id:
+                sprite.level = None
                 self.sprites.remove(sprite)
 
     def get_sprite(self, id):
@@ -71,5 +92,5 @@ class Level:
             except AttributeError:
                 sprite_data.append(
                     {"id": sprite.id, "position": sprite.top_left.list, "size": sprite.size.list, "animated": False,
-                     "image_data": sprite.image_file})
+                     "image_data": sprite.image_file, "tag": sprite.tag})
         self.raw = {"meta": self.meta, "physics": self.physics_data, "sprites": sprite_data}

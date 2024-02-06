@@ -5,9 +5,9 @@
       1000
     ],
     "background": [
-      200,
-      200,
-      200
+      200.0,
+      200.0,
+      200.0
     ],
     "name": "example",
     "image_folder": "bin/images/"
@@ -27,7 +27,8 @@
         50.0
       ],
       "animated": false,
-      "image_data": "bin/images/hi"
+      "image_data": "bin/images/bin/images/hi",
+      "tag": "I'm Tagged!"
     }
   ]
 }
