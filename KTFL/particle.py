@@ -1,25 +1,19 @@
 import random
 import pygame
+import shapely
 from .util import *
 
 
 class ParticleHandler:
-    def __init__(self, images, position=[0,0]):
+    def __init__(self, images, position=[0,0], level=None):
         self.position = Vector2.list_to_vec(position)
         self.particles = []
         self.dead = []
-        self.g_force = 500
+        self.g_force = 200
+        self.level = level
         self.images = []
         for image in images:
-            if type(image) == str:
-                try:
-                    self.images.append(pygame.image.load(image).convert_alpha())
-                except FileNotFoundError:
-                    _surf = pygame.surface.Surface((10, 10))
-                    _surf.fill((0, 0, 0))
-                    self.images.append(_surf)
-            else:
-                self.images.append(image)
+            self.images.append(load_image(image, size=[1,1]))
 
     def update(self, camera, dt=1/60):
         for particle in self.dead:
@@ -28,25 +22,63 @@ class ParticleHandler:
         for particle in self.particles:
             particle.update(camera, dt)
 
-    def new_particle(self, start_pos, direction = None, speed=100, last_for=1, bottom_y=None):
+    def new_particle(self, start_pos, direction=None, speed=100, last_for=1, bottom_y=None):
         if not direction:
-            direction = Vector2(random.randint(-100, 100), random.randint(-100, 100))
+            direction = Vector2(random.random()-0.5, random.random()-0.5)
         direction.normalise()
         direction.set(Vector2(direction.x*speed, direction.y*speed))
-        self.particles.append(Particle(self, start_pos, direction, last_for))
+        self.particles.append(Particle(self, start_pos, direction, last_for, bottom_y))
 
 
 class Particle:
-    def __init__(self, parent: ParticleHandler, position, velocity, last_for):
+    def __init__(self, parent: ParticleHandler, position, velocity, last_for, bottom_y):
         self.position = Vector2.list_to_vec(position)
         self.velocity = Vector2.list_to_vec(velocity)
         self.parent = parent
+        self.bottom_y = bottom_y
         self.anim_tick = last_for/self.parent.images.__len__()
         self.last_for = last_for
         self.index = 0
         self.parent = parent
 
     def update(self, camera, dt: int):
+        if self.bottom_y is not None:
+            self.velocity.y += self.parent.g_force * dt
+            if self.bottom_y < self.position.y:
+                self.position.y = self.bottom_y
+                self.velocity.y = -self.velocity.y * 0.8
+        else:
+            self.velocity.y = self.velocity.y * (1 / (dt + 1))
+
+        self.velocity.x = self.velocity.x * (1/(dt+1))
+        if self.parent.level:
+            _list = point_in_rects(self.position+ self.velocity*dt, (self.parent.level.physics_rects))
+            for obj in _list:
+                _vec = self.position + self.velocity * dt
+                line = shapely.LineString([self.position.list, _vec.list])
+                top = line.intersection(shapely.LineString([obj.topright, obj.topleft]))
+                bottom = line.intersection(shapely.LineString([obj.bottomright, obj.bottomleft]))
+                right = line.intersection(shapely.LineString([obj.topleft, obj.bottomleft]))
+                left = line.intersection(shapely.LineString([obj.topright, obj.bottomright]))
+                if top or bottom:
+                    if top:
+                        intersection = top
+                    else:
+                        intersection = bottom
+                    intersection = Vector2(intersection.x, intersection.y)
+                    # self.velocity.set(self.velocity-intersection)
+                    self.position.set(intersection)
+                    self.velocity.y = -self.velocity.y
+                if left or right:
+                    if left:
+                        intersection = left
+                    else:
+                        intersection = right
+                    intersection = Vector2(intersection.x, intersection.y)
+                    # self.velocity.set(self.velocity-intersection)
+                    self.position.set(intersection)
+                    self.velocity.x = -self.velocity.x
+
         self.position.set(self.position+self.velocity*dt)
         self.anim_tick -= dt
         if self.anim_tick < 0:

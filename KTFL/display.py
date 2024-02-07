@@ -54,7 +54,7 @@ class Camera:
         self.display.surface.blit(pygame.transform.scale(surf, self.display.size.list), self.position.list)
 
     def draw_to(self, sprite: KTFL.sprite.Sprite):
-        new_pos = sprite.position+self.sprite_offset
+        new_pos = sprite.top_left+self.sprite_offset
         self.surface.blit(sprite.image, new_pos.list)
 
     def draw_surf(self, surf, position):

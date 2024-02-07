@@ -1,15 +1,7 @@
 import pygame
 import KTFL.sprite
-from KTFL.util import Vector2
+from .util import *
 import json
-
-
-def collision_list(obj, obj_list):
-    hit_list = []
-    for rect in obj_list:
-        if obj.colliderect(rect):
-            hit_list.append(rect)
-    return hit_list
 
 
 class OverheadPlayer:
@@ -19,9 +11,9 @@ class OverheadPlayer:
         except FileNotFoundError:
             self.data = json.load(open("KTFL/bin/entities/player.json", "r"))
         self.size = Vector2.list_to_vec(self.data["size"])
-        self.position = Vector2.list_to_vec(self.data["position"])
-        self.rect = pygame.rect.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
-        self.sprite = KTFL.sprite.AnimatedSprite(self.size, self.position, self.data["image_data"], centered=True)
+        position = Vector2.list_to_vec(self.data["position"])
+        self.rect = pygame.rect.Rect(position.x, position.y, self.size.x, self.size.y)
+        self.sprite = KTFL.sprite.AnimatedSprite(self.size, position, self.data["image_data"], centered=True)
         self.speed = 300
         self.level = None
 
@@ -29,7 +21,7 @@ class OverheadPlayer:
         self.move(camera.display.control, dt)
         self.sprite.centre = self.centre
         self.sprite.update_animation(dt)
-        self.sprite.draw_to(camera.surface)
+        camera.draw_to(self.sprite)
 
     def move(self, control: KTFL.control.Input, dt):
         velocity = Vector2(0, 0)
@@ -44,21 +36,21 @@ class OverheadPlayer:
             if control.is_action("down"):
                 velocity.y = self.speed * dt
         if self.level:
-            self.position.set(self.check_collision(velocity))
+            new_pos = self.check_collision(velocity)
+            self.rect.update(new_pos.x, new_pos.y, self.size.x, self.size.y)
             return
-        self.position.set(self.position+velocity)
-        self.rect.update(self.position.x, self.position.y, self.size.x, self.size.y)
+        self.rect.update(self.rect.x+velocity.x, self.rect.y+velocity.y, self.size.x, self.size.y)
 
     def check_collision(self, vector):
         self.rect.update(self.rect.left+vector.x, self.rect.top, self.rect.width, self.rect.height)
-        hit_list = collision_list(self.rect, self.level.physics_rects)
+        hit_list = rect_collision_list(self.rect, self.level.physics_rects)
         for rect in hit_list:
             if vector.x > 0:
                 self.rect.right = rect.left
             if vector.x < 0:
                 self.rect.left = rect.right
         self.rect.update(self.rect.left, self.rect.top+vector.y, self.rect.width, self.rect.height)
-        hit_list = collision_list(self.rect, self.level.physics_rects)
+        hit_list = rect_collision_list(self.rect, self.level.physics_rects)
         for rect in hit_list:
             if vector.y > 0:
                 self.rect.bottom = rect.top
@@ -72,4 +64,4 @@ class OverheadPlayer:
 
     @property
     def centre(self):
-        return Vector2(self.position.x + self.size.x/2, self.position.y + self.size.y / 2)
+        return Vector2(self.rect.x + self.size.x/2, self.rect.y + self.size.y/2)
