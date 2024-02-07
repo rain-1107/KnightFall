@@ -17,7 +17,8 @@ class OverheadPlayer:
         self.speed = 300
         self.level = None
 
-    def update(self, camera, dt=1/60):
+    def update(self, camera):
+        dt = camera.display.delta_time
         self.move(camera.display.control, dt)
         self.sprite.centre = self.centre
         self.sprite.update_animation(dt)

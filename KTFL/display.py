@@ -17,8 +17,10 @@ class Display:
         self.fps = fps
         self.clock = pygame.time.Clock()
         self.control = KTFL.control.Input()
+        self.delta_time = 1
 
     def update(self):
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -26,6 +28,7 @@ class Display:
             camera.update()
         pygame.display.flip()
         self.clock.tick(self.fps)
+        self.delta_time = 1 / (self.clock.get_fps()+1)
         self.control.update()
 
     def add_camera(self, camera):

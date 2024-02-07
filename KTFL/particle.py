@@ -1,6 +1,10 @@
 import random
 import pygame
-import shapely
+try:
+    import shapely
+    SHAPELY = True
+except ModuleNotFoundError:
+    SHAPELY = False
 from .util import *
 
 
@@ -15,7 +19,8 @@ class ParticleHandler:
         for image in images:
             self.images.append(load_image(image, size=[1,1]))
 
-    def update(self, camera, dt=1/60):
+    def update(self, camera):
+        dt = camera.display.delta_time
         for particle in self.dead:
             self.particles.remove(particle)
         self.dead = []
@@ -51,7 +56,7 @@ class Particle:
             self.velocity.y = self.velocity.y * (1 / (dt + 1))
 
         self.velocity.x = self.velocity.x * (1/(dt+1))
-        if self.parent.level:
+        if self.parent.level and SHAPELY:
             _list = point_in_rects(self.position+ self.velocity*dt, (self.parent.level.physics_rects))
             for obj in _list:
                 _vec = self.position + self.velocity * dt

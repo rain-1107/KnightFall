@@ -1,6 +1,14 @@
 import sys
 import os
-import pygame
+try:
+    import pygame
+except ModuleNotFoundError:
+    print("Pygame not installed")
+    exit()
+try:
+    import shapely
+except ModuleNotFoundError:
+    print("Shapely not installed")
 
 pygame.init()
 
