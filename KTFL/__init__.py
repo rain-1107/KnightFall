@@ -1,5 +1,6 @@
 import sys
 import os
+
 try:
     import pygame
 except ModuleNotFoundError:
@@ -20,3 +21,4 @@ import KTFL.sprite
 import KTFL.util
 import KTFL.entities
 import KTFL.particle
+import KTFL.net

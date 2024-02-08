@@ -31,8 +31,8 @@ def point_in_rects(point, obj_list):
     point = Vector2.list_to_vec(point)
     _list = []
     for obj in obj_list:
-        if obj.left < point.x < obj.right:
-            if obj.top < point.y < obj.bottom:
+        if obj.left <= point.x < obj.right:
+            if obj.top <= point.y < obj.bottom:
                 _list.append(obj)
     return _list
 

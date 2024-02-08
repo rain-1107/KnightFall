@@ -27,37 +27,34 @@ class ParticleHandler:
         for particle in self.particles:
             particle.update(camera, dt)
 
-    def new_particle(self, start_pos, direction=None, speed=100, last_for=1, bottom_y=None):
+    def new_particle(self, start_pos, direction=None, speed=100, last_for=1, gravity=False):
         if not direction:
             direction = Vector2(random.random()-0.5, random.random()-0.5)
         direction.normalise()
         direction.set(Vector2(direction.x*speed, direction.y*speed))
-        self.particles.append(Particle(self, start_pos, direction, last_for, bottom_y))
+        self.particles.append(Particle(self, start_pos, direction, last_for, gravity))
 
 
 class Particle:
-    def __init__(self, parent: ParticleHandler, position, velocity, last_for, bottom_y):
+    def __init__(self, parent: ParticleHandler, position, velocity, last_for, gravity):
         self.position = Vector2.list_to_vec(position)
         self.velocity = Vector2.list_to_vec(velocity)
         self.parent = parent
-        self.bottom_y = bottom_y
+        self.gravity = gravity
         self.anim_tick = last_for/self.parent.images.__len__()
         self.last_for = last_for
         self.index = 0
         self.parent = parent
 
     def update(self, camera, dt: int):
-        if self.bottom_y is not None:
+        if self.gravity:
             self.velocity.y += self.parent.g_force * dt
-            if self.bottom_y < self.position.y:
-                self.position.y = self.bottom_y
-                self.velocity.y = -self.velocity.y * 0.8
         else:
             self.velocity.y = self.velocity.y * (1 / (dt + 1))
 
         self.velocity.x = self.velocity.x * (1/(dt+1))
         if self.parent.level and SHAPELY:
-            _list = point_in_rects(self.position+ self.velocity*dt, (self.parent.level.physics_rects))
+            _list = point_in_rects(self.position + self.velocity*dt, (self.parent.level.physics_rects))
             for obj in _list:
                 _vec = self.position + self.velocity * dt
                 line = shapely.LineString([self.position.list, _vec.list])
@@ -73,7 +70,10 @@ class Particle:
                     intersection = Vector2(intersection.x, intersection.y)
                     # self.velocity.set(self.velocity-intersection)
                     self.position.set(intersection)
-                    self.velocity.y = -self.velocity.y
+                    if self.gravity:
+                        self.velocity.y = -self.velocity.y * 0.5
+                    else:
+                        self.velocity.y = -self.velocity.y * 0.8
                 if left or right:
                     if left:
                         intersection = left
@@ -82,7 +82,7 @@ class Particle:
                     intersection = Vector2(intersection.x, intersection.y)
                     # self.velocity.set(self.velocity-intersection)
                     self.position.set(intersection)
-                    self.velocity.x = -self.velocity.x
+                    self.velocity.x = -self.velocity.x * 0.8
 
         self.position.set(self.position+self.velocity*dt)
         self.anim_tick -= dt
