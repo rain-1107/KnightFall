@@ -11,12 +11,13 @@ class Client:
     def __init__(self, ip):
         self.outs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ins = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.outs.connect((ip, PORT_TO_SERVER))
-        self.ins.connect((ip, PORT_TO_CLIENT))
+        self.ip = ip
         self.variables = {}
         self.messages = []
 
     def run(self):
+        self.outs.connect((self.ip, PORT_TO_SERVER))
+        self.ins.connect((self.ip, PORT_TO_CLIENT))
         threading.Thread(target=self.sending).start()
         threading.Thread(target=self.receiving).start()
 
