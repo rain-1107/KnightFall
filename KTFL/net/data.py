@@ -8,27 +8,54 @@ CREATE_INTERPOLATED_VAR = 1
 UPDATE_VAR = 2
 DELETE_VAR = 3
 CLOSE_CONNECTION = 4
+STRING_MESSAGE = 5
 
 
-# message data types
+# variable data types
 BOOL = 0
 NUMBER = 1
 VECTOR = 2
 
 
+# standard ports for connection
 PORT_TO_CLIENT = 25565
 PORT_TO_SERVER = 65526
 
 
-class Interpolated:
-    def __init__(self, start_val):
-        self.data_type = type(start_val)
-        self.current_val = [start_val, time()]
-        self.prev_val = [start_val, time()]
+class Data:
+    def __init__(self, id, name, value, data_type):
+        self.id = id
+        self.name = name
+        self.value = value
+        self.data_type = data_type
+        self.interpolated = False
+        self.owner = None
 
+
+class InterpolatedData:
+    def __init__(self, id, name, value, data_type):
+        self.id = id
+        self.name = name
+        self.data_type = data_type
+        self.current_val = [value, time()]
+        self.prev_val = [value, time()]
+        self.interpolated = True
+        self.owner = None
     @property
     def value(self):
-        if self.current_val[1]-self.prev_val[1] == 0:
+        if self.data_type == VECTOR:
+            if self.current_val[1] == self.prev_val[1]:
+                return self.current_val[0]
+            xval = ((time()-self.current_val[1])*(self.current_val[0][0]-self.prev_val[0][0]) /
+                    (self.current_val[1]-self.prev_val[1]))
+            if abs(xval) > abs(self.current_val[0][0] - self.prev_val[0][0]):
+                xval = self.current_val[0][0] - self.prev_val[0][0]
+            yval = ((time() - self.current_val[1]) * (self.current_val[0][1] - self.prev_val[0][1]) /
+                    (self.current_val[1] - self.prev_val[1]))
+            if abs(yval) > abs(self.current_val[0][1] - self.prev_val[0][1]):
+                yval = self.current_val[0][1] - self.prev_val[0][1]
+            return xval + self.prev_val[0][0], yval + self.prev_val[0][0]
+        if self.current_val[1] == self.prev_val[1]:
             return self.current_val[0]
         val = ((time()-self.current_val[1])*(self.current_val[0]-self.prev_val[0])/(self.current_val[1]-self.prev_val[1]))
         if abs(val) > abs(self.current_val[0] - self.prev_val[0]):
@@ -42,20 +69,22 @@ class Interpolated:
 
 
 class Message:
-    def __init__(self, message_type: int, data, data_type: int, data_id):
+    def __init__(self, message_type: int, data, data_type: int, data_id, string=""):
         self.message_type = message_type
         self.data = data
         self.data_type = data_type
         self.id = data_id
         self._bytes = None
+        self.string = string
 
     def get_bytes(self):
         if self._bytes:
             return self._bytes
+        if self.message_type in [CREATE_VAR]:
+            pass
         byte_list = bytearray(bytes(8))
         byte_list[0] = self.message_type * 16 + self.data_type
         byte_list[1] = self.id
-
         if self.data_type == VECTOR:
             data = [trunc(self.data[0] * 25600), trunc(self.data[1] * 25600)]
             byte_i = 2
@@ -83,6 +112,9 @@ class Message:
             if self.data: data += 1
             byte_list[8] = self.data
         return byte_list
+
+    def get_string_bytes(self):
+        return self.string.encode("utf-8")
 
     @staticmethod
     def decode(binary):
