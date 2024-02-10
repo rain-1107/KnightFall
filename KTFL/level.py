@@ -3,8 +3,6 @@ import json
 from .sprite import *
 from .util import *
 
-# TODO: add tag variables to object data (loading, saving, creating)
-
 
 class Level:
     def __init__(self, file):
@@ -14,7 +12,7 @@ class Level:
         self.sprite_data = {}
         self.sprites = []
         self.physics_data = {}
-        self.physics_objects = []
+        self.objects = []
 
     def load(self):
         try:
@@ -37,7 +35,7 @@ class Level:
                                  sprite["image_data"], id=sprite["id"], tag=sprite["tag"])
             self.add_sprite(_sprite)
         for object in self.physics_data["objects"]:
-            self.physics_objects.append(Object(pygame.rect.Rect(*object["rect"]), object["id"], object["static"]))
+            self.objects.append(Object(pygame.rect.Rect(*object["rect"]), object["id"], object["static"], object["tag"]))
 
     def get_sprite_by_tag(self, tag):
         _list = []
@@ -50,8 +48,8 @@ class Level:
         self.sprites.append(sprite)
         sprite.level = self
 
-    def add_object(self, rect, id, static=True):
-        self.physics_objects.append(Object(rect, id, static))
+    def add_object(self, rect, id, static=True, tag=""):
+        self.objects.append(Object(rect, id, static, tag))
 
     def delete_sprite(self, id):
         _sprite = self.get_sprite_by_id(id)
@@ -61,7 +59,7 @@ class Level:
     def delete_object(self, id):
         _object = self.get_object_by_id(id)
         if _object:
-            self.physics_objects.remove(_object)
+            self.objects.remove(_object)
 
     def get_sprite_by_id(self, id):
         for sprite in self.sprites:
@@ -70,23 +68,36 @@ class Level:
         return None
 
     def get_object_by_id(self, id):
-        for object in self.physics_objects:
+        for object in self.objects:
             if object.id == id:
                 return object
         return None
 
+    def get_sprites_with_tag(self, tag):
+        _list = []
+        for sprite in self.sprites:
+            if sprite.tag == tag:
+                _list.append(sprite)
+        return _list
+
+    def get_objects_with_tag(self, tag):
+        _list = []
+        for obj in self.objects:
+            if obj.tag == tag:
+                _list.append(obj)
+        return _list
+
     @property
     def physics_rects(self):
         _list = []
-        for obj in self.physics_objects:
+        for obj in self.objects:
             _list.append(obj.rect)
         return _list
 
     def update_raw(self):
         self.physics_data["objects"] = []
-        for object in self.physics_objects:
-            self.physics_data["objects"].append({"rect": [object.rect.left, object.rect.top, object.rect.width, object.rect.height], "static": object.static, "id": object.id})
-
+        for object in self.objects:
+            self.physics_data["objects"].append({"rect": [object.rect.left, object.rect.top, object.rect.width, object.rect.height], "static": object.static, "id": object.id, "tag": object.tag})
         sprite_data = []
         for sprite in self.sprites:
             try:
@@ -101,7 +112,8 @@ class Level:
 
 
 class Object:
-    def __init__(self, rect, id, static):
+    def __init__(self, rect, id, static, tag=""):
         self.rect = rect
         self.id = id
         self.static = static
+        self.tag = tag

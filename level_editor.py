@@ -111,10 +111,10 @@ def create_menu():
                                         function=create_object, text="Create")
     buttons["objedit"] = KTFL.gui.Button((75, 30), (100, object_top + 190), "level editor/bin/images/button0.png",
                                       "level editor/bin/images/button1.png",
-                                      function=create_object, text="Edit")
+                                      function=edit_object, text="Edit")
     buttons["objdelete"] = KTFL.gui.Button((75, 30), (180, object_top + 190), "level editor/bin/images/button0.png",
                                         "level editor/bin/images/button1.png",
-                                        function=create_object, text="Delete")
+                                        function=delete_object, text="Delete")
 
     # ui for grid drawing
     grid_top = 280
@@ -224,11 +224,15 @@ def update_level_cam():
             tag_text = KTFL.gui.get_text_surf(f"{sprite.tag}")
             level_cam.surface.blit(tag_text, ((sprite.size.x / 2) - (tag_text.get_size()[0] / 2) + sprite.position.x + level_cam.draw_offset.x,
                                               sprite.size.y - (tag_text.get_size()[1] / 2) + sprite.position.y + level_cam.draw_offset.y))
-    for obj in current_level.physics_objects:
+    for obj in current_level.objects:
         rect = obj.rect
         pos = [rect.right - 15, rect.top + 5]
         pygame.draw.rect(level_cam.surface, (255, 255, 255), (rect.left + level_cam.draw_offset.x, rect.top + level_cam.draw_offset.y, rect.w, rect.h), width=1)
         level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(obj.id), colour=(255, 255, 255)), position=pos)
+        if obj.tag:
+            tag_text = KTFL.gui.get_text_surf(f"{obj.tag}",colour=(255, 255, 255))
+            level_cam.surface.blit(tag_text, ((obj.rect.w / 2) - (tag_text.get_size()[0] / 2) + obj.rect.left + level_cam.draw_offset.x,
+                                              obj.rect.h - (tag_text.get_size()[1] / 2) + obj.rect.top + level_cam.draw_offset.y - 10))
 
 
 def update_menu():
@@ -327,6 +331,37 @@ def create_sprite():
     tag = inputs["tag"].text
     current_level.add_sprite(KTFL.sprite.Sprite(size, position, file, id=id, tag=tag))
 
+
+def delete_sprite():
+    id = int(inputs["id"].text)
+    if id:
+        current_level.delete_sprite(id)
+
+
+def edit_sprite():
+    try:
+        id = int(inputs["id"].text)
+    except ValueError:
+        print("Invalid id")
+        return
+    sprite = current_level.get_sprite_by_id(id)
+    if not sprite:
+        edit_object()
+        return
+    try:
+        if inputs["positionx"].text and inputs["positiony"]:
+            position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
+            sprite.position = position
+        if inputs["sizex"].text and inputs["sizey"].text:
+            size = [float(inputs["sizex"].text), float(inputs["sizey"].text)]
+            sprite.size = size
+    except ValueError:
+        print("Invalid pos and size")
+        return
+    if inputs["file"].text:
+        sprite.image = inputs["file"].text
+    sprite.tag = inputs["tag"].text
+
 def create_object():
     try:
         position = [float(inputs["objpositionx"].text), float(inputs["objpositiony"].text)]
@@ -350,51 +385,38 @@ def create_object():
         print("Can not have duplicate object IDs")
         return
 
-    tag = inputs["tag"].text
-    current_level.add_object(pygame.rect.Rect(position[0], position[1], size[0], size[1]), id, True)
-
-
-def delete_sprite():
-    id = int(inputs["id"].text)
-    if id:
-        current_level.delete_sprite(id)
-        current_level.delete_object(id)
-
-
-def edit_sprite():
-    id = int(inputs["id"].text)
-    sprite = current_level.get_sprite_by_id(id)
-    if not sprite:
-        edit_object()
-        return
-    if inputs["positionx"].text and inputs["positiony"]:
-        position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
-        sprite.position = position
-    if inputs["sizex"].text and inputs["sizey"].text:
-        size = [float(inputs["sizex"].text), float(inputs["sizey"].text)]
-        sprite.size = size
-    if inputs["file"].text:
-        sprite.image = inputs["file"].text
-    sprite.tag = inputs["tag"].text
-    if sprite.tag == "object":
-        rect = pygame.rect.Rect(sprite.position.x, sprite.position.y, sprite.size.x, sprite.size.y)
-        id = sprite.id
-        current_level.delete_sprite(sprite.id)
-        current_level.add_object(rect, id)
+    tag = inputs["objtag"].text
+    current_level.add_object(pygame.rect.Rect(position[0], position[1], size[0], size[1]), id, True, tag=tag)
 
 
 def edit_object():
-    id = int(inputs["id"].text)
+    try:
+        id = int(inputs["objid"].text)
+    except ValueError:
+        print("Invalid id")
+        return
     obj = current_level.get_object_by_id(id)
     if not obj:
         return
     position = [obj.rect.x, obj.rect.y]
-    if inputs["positionx"].text and inputs["positiony"]:
-        position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
-    size = [obj.rect.w, obj.rect.h]
-    if inputs["sizex"].text and inputs["sizey"].text:
-        size = [float(inputs["sizex"].text), float(inputs["sizey"].text)]
+    try:
+        if inputs["objpositionx"].text and inputs["objpositiony"]:
+            position = [float(inputs["objpositionx"].text), float(inputs["objpositiony"].text)]
+        size = [obj.rect.w, obj.rect.h]
+        if inputs["objsizex"].text and inputs["objsizey"].text:
+            size = [float(inputs["objsizex"].text), float(inputs["objsizey"].text)]
+    except ValueError:
+        print("Invalid size or position")
+        return
+    if inputs["objtag"].text:
+        obj.tag = inputs["objtag"].text
     obj.rect.update(*position, *size)
+
+def delete_object():
+    id = int(inputs["id"].text)
+    if id:
+        current_level.delete_object(id)
+
 
 
 create_menu()

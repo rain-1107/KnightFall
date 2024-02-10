@@ -21,7 +21,8 @@
           360
         ],
         "static": true,
-        "id": 3
+        "id": 3,
+        "tag": ""
       },
       {
         "rect": [
@@ -31,7 +32,8 @@
           360
         ],
         "static": true,
-        "id": 4
+        "id": 4,
+        "tag": ""
       },
       {
         "rect": [
@@ -41,7 +43,8 @@
           48
         ],
         "static": true,
-        "id": 6
+        "id": 6,
+        "tag": ""
       },
       {
         "rect": [
@@ -51,7 +54,8 @@
           48
         ],
         "static": true,
-        "id": 8
+        "id": 8,
+        "tag": ""
       }
     ]
   },
