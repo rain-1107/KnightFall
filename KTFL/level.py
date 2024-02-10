@@ -5,6 +5,7 @@ from .util import *
 
 # TODO: add tag variables to object data (loading, saving, creating)
 
+
 class Level:
     def __init__(self, file):
         self.file = file
