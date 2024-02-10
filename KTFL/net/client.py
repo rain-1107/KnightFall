@@ -42,6 +42,10 @@ class Client:
             if message:
                 if message.message_type == UPDATE_VAR and message.id in self.variables:
                     self.variables[message.id].value = message.data
+                    if message.data_type == STRING:
+                        string = self.ins.recv(int(message.data)).decode("utf-8")
+                        message.string = string
+                        self.variables[message.id].value = string
                 elif message.message_type == CREATE_INTERPOLATED_VAR and message.id not in self.variables:
                     string = self.ins.recv(int(message.data)).decode("utf-8")
                     self.variables[message.id] = InterpolatedData(message.id, string, None, message.data_type)
@@ -74,22 +78,31 @@ class Client:
 
     # TODO: add a function to create message query for each type
     def new_var(self, id, name: str, value, data_type):
-        self.messages.append(Message(CREATE_VAR, name.__len__(), data_type, id, string=name))
+        self.messages.append(Message(CREATE_VAR, name.__len__(), NUMBER, id, string=name))
         self.messages.append(Message(UPDATE_VAR, value, data_type, id))
 
     def update_var(self, id, var, data_type):
+        if data_type == STRING:
+            msg = Message(UPDATE_VAR, var.__len__(), STRING, id)
+            msg.string = var
+            self.messages.append(msg)
+            return
         self.messages.append(Message(UPDATE_VAR, var, data_type, id))
 
     def send_string(self, string):
         self.messages.append(Message(STRING_MESSAGE, string.__len__(), NUMBER, 0, string))
 
     def get_var_by_id(self, id):
-        return self.variables[id]
+        try:
+            return self.variables[id]
+        except KeyError:
+            return None
 
     def get_var_by_name(self, name):
         for key in self.variables:
             if self.variables[key][3] == name:
                 return self.variables[key][3]
+        return None
 
 
 if __name__ == '__main__':
@@ -97,4 +110,8 @@ if __name__ == '__main__':
     client.run()
     client.new_var(2, "Hello", 1, NUMBER)
     while True:
+        val = client.get_var_by_id(2)
+        if val:
+            print(val.value)
         new = input()
+        client.update_var(2, new, STRING)

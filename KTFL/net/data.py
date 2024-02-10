@@ -15,6 +15,7 @@ STRING_MESSAGE = 5
 BOOL = 0
 NUMBER = 1
 VECTOR = 2
+STRING = 3
 
 
 # standard ports for connection
@@ -97,7 +98,7 @@ class Message:
                     byte_i += 1
 
             self._bytes = byte_list
-        if self.data_type == NUMBER:
+        if self.data_type == NUMBER or self.data_type == STRING:
             data = trunc(self.data * 256000)
             byte_i = 2
             for i in range(6, 0, -1):
@@ -118,16 +119,12 @@ class Message:
 
     @staticmethod
     def decode(binary):
-        try:
-            message_type = binary[0] // 16
-            variable_type = binary[0] % 16
-            id = binary[1]
-            if variable_type == VECTOR:
-                data = [int.from_bytes(bytes(binary[2:5]), "big", signed=False)/100,
-                        int.from_bytes(bytes(binary[5:8]), "big", signed=False)/100]
-            elif variable_type == NUMBER:
-                data = int.from_bytes(bytes(binary[2:8]), "big", signed=False)/1000
-            return Message(message_type, data, variable_type,  id)
-        except:
-            print(f"Error in decoding binary {binary}")
-            return None
+        message_type = binary[0] // 16
+        variable_type = binary[0] % 16
+        id = binary[1]
+        if variable_type == VECTOR:
+            data = [int.from_bytes(bytes(binary[2:5]), "big", signed=False)/100,
+                    int.from_bytes(bytes(binary[5:8]), "big", signed=False)/100]
+        elif variable_type == NUMBER or variable_type == STRING:
+            data = int.from_bytes(bytes(binary[2:8]), "big", signed=False)/1000
+        return Message(message_type, data, variable_type,  id)
