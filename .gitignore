@@ -1,5 +1,6 @@
 /pygame/
 /bin/
+/.vscode/
 *.pyc
 *.xml
 *.iml

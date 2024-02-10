@@ -22,7 +22,7 @@ class OverheadPlayer:
         self.move(camera.display.control, dt)
         self.sprite.centre = self.centre
         self.sprite.update_animation(dt)
-        camera.draw_to(self.sprite)
+        camera.draw_sprite(self.sprite)
 
     def move(self, control: KTFL.control.Input, dt):
         velocity = Vector2(0, 0)

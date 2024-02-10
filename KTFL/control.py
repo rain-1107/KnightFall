@@ -1,6 +1,6 @@
 import pygame
 import json
-
+import math
 
 class Input:
     def __init__(self, keyboard_config="", allow_controller=False):
@@ -109,7 +109,7 @@ class Input:
             else:
                 xcoeff = camera.size.x / screen_size[0]
                 ycoeff = camera.size.y / screen_size[1]
-            return [(self.log["mouse"]["position"][0]-camera.position.x)*xcoeff, (self.log["mouse"]["position"][1]-camera.position.y)*ycoeff]
+            return [math.trunc(((self.log["mouse"]["position"][0]-camera.position.x)-camera.draw_offset.x)*xcoeff), math.trunc(((self.log["mouse"]["position"][1]-camera.position.y)-camera.draw_offset.y)*ycoeff)]
         else:
             return self.log["mouse"]["position"]
 

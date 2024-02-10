@@ -76,6 +76,9 @@ class Vector2:
             self.y = snapped_y
         return snapped_x, snapped_y
 
+    def copy(self):
+        return Vector2(self.x, self.y)
+
     @property
     def list(self):
         return [self.x, self.y]

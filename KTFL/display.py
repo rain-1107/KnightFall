@@ -47,7 +47,8 @@ class Camera:
         self.display_size = display_size
         self.position = Vector2.list_to_vec(position)
         self.surface = pygame.surface.Surface(size, pygame.SRCALPHA)
-        self.sprite_offset = Vector2(0, 0)
+        self.surface.set_clip((0, 0, self.size.x, self.size.y))
+        self.draw_offset = Vector2(0, 0)
 
     def update(self):
         surf = self.surface
@@ -56,19 +57,23 @@ class Camera:
             return
         self.display.surface.blit(pygame.transform.scale(surf, self.display.size.list), self.position.list)
 
-    def draw_to(self, sprite: KTFL.sprite.Sprite):
-        new_pos = sprite.top_left+self.sprite_offset
+    def draw_sprite(self, sprite: KTFL.sprite.Sprite):
+        new_pos = sprite.top_left+self.draw_offset
         self.surface.blit(sprite.image, new_pos.list)
 
     def draw_surf(self, surf, position):
-        self.surface.blit(surf, position)
+        position = Vector2.list_to_vec(position) + self.draw_offset
+        self.surface.blit(surf, position.list)
 
     def delete(self):
         self.display.cameras.remove(self)
         del self
 
-    def clear(self, colour=(0, 0, 0)):
-        self.surface.fill(colour)
+    def clear(self, colour=None):
+        if colour:
+            self.surface.fill(colour)
+            return
+        self.surface.fill((0, 0, 0, 0))
 
     def set_size(self, new):
         self.size = new

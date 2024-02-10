@@ -8,11 +8,11 @@ FONT = pygame.font.Font("freesansbold.ttf", 15)
 def draw_grid(camera, sx, sy, inside_rect):
     surf = camera.surface
     for x in range(inside_rect.left, inside_rect.right, int(sx)):
-        pygame.draw.line(surf, (0, 0, 0), (x+camera.sprite_offset.x, inside_rect.top+camera.sprite_offset.y),
-                         (x+camera.sprite_offset.x, inside_rect.bottom+camera.sprite_offset.y))
+        pygame.draw.line(surf, (0, 0, 0), (x + camera.draw_offset.x, inside_rect.top + camera.draw_offset.y),
+                         (x + camera.draw_offset.x, inside_rect.bottom + camera.draw_offset.y))
     for y in range(inside_rect.top, inside_rect.bottom, int(sy)):
-        pygame.draw.line(surf, (0, 0, 0), (inside_rect.left+camera.sprite_offset.x, y+camera.sprite_offset.y),
-                         (inside_rect.right+camera.sprite_offset.x, y+camera.sprite_offset.y))
+        pygame.draw.line(surf, (0, 0, 0), (inside_rect.left + camera.draw_offset.x, y + camera.draw_offset.y),
+                         (inside_rect.right + camera.draw_offset.x, y + camera.draw_offset.y))
 
 
 def get_text_surf(text, font=None, colour=(0, 0, 0)):
@@ -31,7 +31,6 @@ class Button:
         self.text_surf = get_text_surf(text)
 
     def update(self, camera):
-        surf = camera.surface
         input = camera.display.control
         self.pressed = False
         image_index = 0
@@ -43,8 +42,8 @@ class Button:
                     self.function()
                 else:
                     self.pressed = True
-        surf.blit(self.sprites[image_index].image, self.position)
-        surf.blit(self.text_surf, [(self.position[0]+self.size[0]/2)-(self.text_surf.get_size()[0]/2), (self.position[1]+self.size[1]/2)-(self.text_surf.get_size()[1]/2)])
+        camera.draw_sprite(self.sprites[image_index])
+        camera.draw_surf(self.text_surf, [(self.position[0]+self.size[0]/2)-(self.text_surf.get_size()[0]/2), (self.position[1]+self.size[1]/2)-(self.text_surf.get_size()[1]/2)])
 
 
 class Switch:
@@ -61,7 +60,6 @@ class Switch:
         self.on = 0
 
     def update(self, camera):
-        surf = camera.surface
         input = camera.display.control
         image_index = 0
         if self.position[0] <= input.mouse_pos(camera)[0] <= self.position[0] + self.size[0] and \
@@ -69,7 +67,7 @@ class Switch:
             image_index = 1
             if input.mouse_button(1) == "down":
                 self.on = int(not self.on == 1)
-        surf.blit(self.sprites[self.on][image_index].image, self.position)
+        camera.draw_sprite(self.sprites[self.on][image_index])
 
 
 class TextInput:
@@ -85,7 +83,6 @@ class TextInput:
         self.selected = False
 
     def update(self, camera, dt=1 / 60):
-        surf = camera.surface
         input = camera.display.control
         if input.mouse_button(1) == "down":
             if self.position[0] <= input.mouse_pos(camera)[0] <= self.position[0] + self.size[0] and \
@@ -114,14 +111,14 @@ class TextInput:
             if self.tick < 0:
                 self.tick = self.pulse
                 self.show_column = not self.show_column
-            self.sprite.draw_to(surf)
+            camera.draw_sprite(self.sprite)
             if self.show_column:
-                surf.blit(get_text_surf(self.text+"|", font=self.font),
+                camera.draw_surf(get_text_surf(self.text+"|", font=self.font),
                           [self.position[0] + 5, self.position[1] + self.size[1] / 2 - 8])
                 return
-            surf.blit(get_text_surf(self.text, font=self.font),
+            camera.draw_surf(get_text_surf(self.text, font=self.font),
                       [self.position[0] + 5, self.position[1] + self.size[1] / 2 - 8])
             return
-        self.sprite.draw_to(surf)
-        surf.blit(get_text_surf(self.text, font=self.font),
+        camera.draw_sprite(self.sprite)
+        camera.draw_surf(get_text_surf(self.text, font=self.font),
                   [self.position[0] + 5, self.position[1] + self.size[1] / 2 - 8])

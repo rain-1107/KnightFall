@@ -3,6 +3,7 @@ import json
 from .sprite import *
 from .util import *
 
+# TODO: add tag variables to object data (loading, saving, creating)
 
 class Level:
     def __init__(self, file):
@@ -48,11 +49,13 @@ class Level:
         self.sprites.append(sprite)
         sprite.level = self
 
+    def add_object(self, rect, id, static=True):
+        self.physics_objects.append(Object(rect, id, static))
+
     def delete_sprite(self, id):
         _sprite = self.get_sprite_by_id(id)
         if _sprite:
             self.sprites.remove(_sprite)
-
 
     def delete_object(self, id):
         _object = self.get_object_by_id(id)
@@ -64,9 +67,6 @@ class Level:
             if sprite.id == id:
                 return sprite
         return None
-
-    def add_object(self, rect, id, static=True):
-        self.physics_objects.append(Object(rect, id, static))
 
     def get_object_by_id(self, id):
         for object in self.physics_objects:

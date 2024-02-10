@@ -26,7 +26,7 @@ while True:
             other_sprite.position = client.variables[var].value
         print(client.variables[var].value, client.variables[var].name[:-3])
     other_sprite.update_animation(screen.delta_time)
-    camera.draw_to(other_sprite)
+    camera.draw_sprite(other_sprite)
     var = client.get_var_by_name(f"{client.id} pos")
     if var:
         client.update_var(var.id, player.rect.topleft, KTFL.net.VECTOR)
