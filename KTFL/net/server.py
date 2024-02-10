@@ -11,6 +11,7 @@ class ServerClient:
         self.ins = ins
         self.outs = outs
         self.ip = ip
+        self.id = 0
         self.messages = []
         self.threads = []
         self.alive = True
@@ -24,6 +25,7 @@ class Server:
     def __init__(self, size, variables={}):
         self.size = size
         self.variables = variables
+        self.id_index = {}
         self.outs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ins = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.outs.bind((socket.gethostname(), PORT_TO_CLIENT))
@@ -41,6 +43,7 @@ class Server:
             print(f"Handling connection from {addrin[0]}")
             if addrin[0] == addrout[0]:
                 client = ServerClient(cin, cout, addrin[0])
+                client.id = self.clients.__len__()
                 self.clients.append(client)
                 client.threads.append(threading.Thread(target=self.handle_recv, args=(client,)).start())
                 client.threads.append(threading.Thread(target=self.handle_send, args=(client,)).start())
@@ -91,14 +94,24 @@ class Server:
                             c.messages.append(message)
                 elif message.message_type == CLOSE_CONNECTION:
                     self.close_connection(client)
+                elif message.message_type == ID_REQUEST:
+                    client.messages.append(Message(ID_REQUEST, client.id, NUMBER, 0))
 
     def handle_send(self, client: ServerClient):
         for id in self.variables:
             var = self.variables[id]
+            create_type = CREATE_VAR
             if var.interpolated:
-                client.outs.send(Message(CREATE_INTERPOLATED_VAR, var.value, var.data_type, id).get_bytes())
+                create_type = CREATE_INTERPOLATED_VAR
+            create_msg = Message(create_type, var.name.__len__(), NUMBER, id, string=var.name)
+            client.outs.send(create_msg.get_bytes())
+            client.outs.send(create_msg.get_string_bytes())
+            if var.data_type != STRING:
+                msg = Message(UPDATE_VAR, var.value.__len__(), var.data_type, id, string=var.value)
+                client.outs.send(msg.get_bytes())
+                client.outs.send(msg.get_bytes())
             else:
-                client.outs.send(Message(CREATE_VAR, var.value, var.data_type, id).get_bytes())
+                client.outs.send(Message(UPDATE_VAR, var.value, var.data_type, id).get_bytes())
         while client.alive:
             msg = client.get_message()
             if msg:
@@ -110,8 +123,6 @@ class Server:
         print(f"Closing connection with {client.ip}")
         self.clients.remove(client)
         client.alive = False
-        for thread in self.clients:
-            thread.join()
         for id in self.variables.copy():
             if self.variables[id] == client:
                 self.variables.pop(id)

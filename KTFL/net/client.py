@@ -14,10 +14,11 @@ class Client:
         self.outs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ins = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ip = ip
-        self.variables = {}
+        self._vars = {}
         self.messages = []
         self.received_strings = []
         self.connected = False
+        self.id = 0
 
     def run(self):
         try:
@@ -29,6 +30,7 @@ class Client:
         self.connected = True
         threading.Thread(target=self.sending).start()
         threading.Thread(target=self.receiving).start()
+        self.messages.append(Message(ID_REQUEST, 0, NUMBER, 0))
         return True
 
     def receiving(self):
@@ -40,26 +42,28 @@ class Client:
                 return
             message = Message.decode(receive)
             if message:
-                if message.message_type == UPDATE_VAR and message.id in self.variables:
-                    self.variables[message.id].value = message.data
+                if message.message_type == UPDATE_VAR and message.id in self._vars:
+                    self._vars[message.id].value = message.data
                     if message.data_type == STRING:
                         string = self.ins.recv(int(message.data)).decode("utf-8")
                         message.string = string
-                        self.variables[message.id].value = string
-                elif message.message_type == CREATE_INTERPOLATED_VAR and message.id not in self.variables:
+                        self._vars[message.id].value = string
+                elif message.message_type == CREATE_INTERPOLATED_VAR and message.id not in self._vars:
                     string = self.ins.recv(int(message.data)).decode("utf-8")
-                    self.variables[message.id] = InterpolatedData(message.id, string, None, message.data_type)
-                elif message.message_type == CREATE_VAR and message.id not in self.variables:
+                    self._vars[message.id] = InterpolatedData(message.id, string, None, message.data_type)
+                elif message.message_type == CREATE_VAR and message.id not in self._vars:
                     string = self.ins.recv(int(message.data)).decode("utf-8")
-                    self.variables[message.id] = Data(message.id, string, None, message.data_type)
-                elif message.message_type == DELETE_VAR and message.id in self.variables:
-                    self.variables.pop(message.id)
+                    self._vars[message.id] = Data(message.id, string, None, message.data_type)
+                elif message.message_type == DELETE_VAR and message.id in self._vars:
+                    self._vars.pop(message.id)
                 elif message.message_type == STRING_MESSAGE:
                     string = self.ins.recv(int(message.data)).decode("utf-8")
                     print(string)
                     self.received_strings.append(string)
                 elif message.message_type == CLOSE_CONNECTION:
                     self.close_connection()
+                elif message.message_type == ID_REQUEST:
+                    self.id = int(message.data)
 
     def sending(self):
         while self.connected:
@@ -79,7 +83,7 @@ class Client:
     # TODO: add a function to create message query for each type
     def new_var(self, id, name: str, value, data_type):
         self.messages.append(Message(CREATE_VAR, name.__len__(), NUMBER, id, string=name))
-        self.messages.append(Message(UPDATE_VAR, value, data_type, id))
+        self.update_var(id, value, data_type)
 
     def update_var(self, id, var, data_type):
         if data_type == STRING:
@@ -94,16 +98,19 @@ class Client:
 
     def get_var_by_id(self, id):
         try:
-            return self.variables[id]
+            return self._vars[id]
         except KeyError:
             return None
 
     def get_var_by_name(self, name):
-        for key in self.variables:
-            if self.variables[key][3] == name:
-                return self.variables[key][3]
+        for key in self._vars:
+            if self._vars[key].name == name:
+                return self._vars[key]
         return None
 
+    @property
+    def variables(self):
+        return self._vars.copy()
 
 if __name__ == '__main__':
     client = Client("local")

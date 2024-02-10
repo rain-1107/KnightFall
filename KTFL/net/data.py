@@ -9,6 +9,7 @@ UPDATE_VAR = 2
 DELETE_VAR = 3
 CLOSE_CONNECTION = 4
 STRING_MESSAGE = 5
+ID_REQUEST = 6
 
 
 # variable data types
@@ -87,25 +88,21 @@ class Message:
         byte_list[0] = self.message_type * 16 + self.data_type
         byte_list[1] = self.id
         if self.data_type == VECTOR:
-            data = [trunc(self.data[0] * 25600), trunc(self.data[1] * 25600)]
+            data = [trunc(self.data[0] * 100), trunc(self.data[1] * 100)]
+            data = [data[0].to_bytes(3, "big", signed=True), data[1].to_bytes(3, "big", signed=True)]
             byte_i = 2
             for axis in data:
-                for i in range(3, 0, -1):
-                    bit_strength = 2**(i*8)
-                    byte = axis // bit_strength
-                    axis = axis % bit_strength
-                    byte_list[byte_i] = byte
+                for i in range(0, 3):
+                    byte_list[byte_i] = axis[i]
                     byte_i += 1
 
             self._bytes = byte_list
         if self.data_type == NUMBER or self.data_type == STRING:
-            data = trunc(self.data * 256000)
+            data = trunc(self.data * 1000)
+            data = data.to_bytes(6, "big", signed=True)
             byte_i = 2
-            for i in range(6, 0, -1):
-                bit_strength = 2 ** (i * 8)
-                byte = data // bit_strength
-                data = data % bit_strength
-                byte_list[byte_i] = byte
+            for i in range(0, 6):
+                byte_list[byte_i] = data[i]
                 byte_i += 1
             self._bytes = byte_list
         if self.data_type == BOOL:
@@ -123,8 +120,11 @@ class Message:
         variable_type = binary[0] % 16
         id = binary[1]
         if variable_type == VECTOR:
-            data = [int.from_bytes(bytes(binary[2:5]), "big", signed=False)/100,
-                    int.from_bytes(bytes(binary[5:8]), "big", signed=False)/100]
+            data = [int.from_bytes(bytes(binary[2:5]), "big", signed=True)/100,
+                    int.from_bytes(bytes(binary[5:8]), "big", signed=True)/100]
         elif variable_type == NUMBER or variable_type == STRING:
-            data = int.from_bytes(bytes(binary[2:8]), "big", signed=False)/1000
-        return Message(message_type, data, variable_type,  id)
+            data = int.from_bytes(bytes(binary[2:8]), "big", signed=True)/1000
+        try:
+            return Message(message_type, data, variable_type,  id)
+        except UnboundLocalError:
+            print(message_type, variable_type)

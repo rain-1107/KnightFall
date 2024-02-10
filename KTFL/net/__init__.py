@@ -1,3 +1,3 @@
 import KTFL.net.client
 import KTFL.net.server
-import KTFL.net.data
+from KTFL.net.data import *
