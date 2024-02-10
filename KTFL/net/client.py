@@ -16,7 +16,7 @@ class Client:
         self.ip = ip
         self._vars = {}
         self.messages = []
-        self.received_strings = []
+        self.received_data = []
         self.connected = False
         self.id = 0
 
@@ -30,7 +30,7 @@ class Client:
         self.connected = True
         threading.Thread(target=self.sending).start()
         threading.Thread(target=self.receiving).start()
-        self.messages.append(Message(ID_REQUEST, 0, NUMBER, 0))
+        self.messages.append(Message(CLIENT_ID_REQUEST, 0, NUMBER, 0))
         return True
 
     def receiving(self):
@@ -58,12 +58,14 @@ class Client:
                     self._vars.pop(message.id)
                 elif message.message_type == STRING_MESSAGE:
                     string = self.ins.recv(int(message.data)).decode("utf-8")
-                    print(string)
-                    self.received_strings.append(string)
+                    message.string = string
+                    self.received_data.append(message)
                 elif message.message_type == CLOSE_CONNECTION:
                     self.close_connection()
-                elif message.message_type == ID_REQUEST:
+                elif message.message_type == CLIENT_ID_REQUEST:
                     self.id = int(message.data)
+                elif message.message_type == UNUSED_ID_REQUEST:
+                    self.received_data.append(message)
 
     def sending(self):
         while self.connected:
@@ -80,12 +82,24 @@ class Client:
     def close_connection(self):
         self.connected = False
 
-    # TODO: add a function to create message query for each type
-    def new_var(self, id, name: str, value, data_type):
+    def create_variable(self, name: str, value, data_type, id=None):  # NOTE: This function will pause running to wait for a response
+        if id is None:
+            self.messages.append(Message(UNUSED_ID_REQUEST, 0, NUMBER, 0))
+            waiting = True
+            while waiting:
+                for message in self.received_data:
+                    if message.message_type == UNUSED_ID_REQUEST:
+                        id = int(message.data)
+                        self.received_data.remove(message)
+                        waiting = False
         self.messages.append(Message(CREATE_VAR, name.__len__(), NUMBER, id, string=name))
-        self.update_var(id, value, data_type)
+        self.update_variable(id, value, data_type)
+        waiting = True
+        while waiting:
+            if id in self.variables:
+                return
 
-    def update_var(self, id, var, data_type):
+    def update_variable(self, id, var, data_type):
         if data_type == STRING:
             msg = Message(UPDATE_VAR, var.__len__(), STRING, id)
             msg.string = var
@@ -93,7 +107,7 @@ class Client:
             return
         self.messages.append(Message(UPDATE_VAR, var, data_type, id))
 
-    def send_string(self, string):
+    def send_string_message(self, string):
         self.messages.append(Message(STRING_MESSAGE, string.__len__(), NUMBER, 0, string))
 
     def get_var_by_id(self, id):
@@ -112,13 +126,14 @@ class Client:
     def variables(self):
         return self._vars.copy()
 
+
 if __name__ == '__main__':
     client = Client("local")
     client.run()
-    client.new_var(2, "Hello", 1, NUMBER)
+    client.create_variable(2, "Hello", 1, NUMBER)
     while True:
         val = client.get_var_by_id(2)
         if val:
             print(val.value)
         new = input()
-        client.update_var(2, new, STRING)
+        client.update_variable(2, new, STRING)

@@ -16,18 +16,18 @@ client.run()
 
 pygame.time.wait(200)
 
-client.new_var(client.id, f"{client.id} pos", player.rect.topleft, KTFL.net.VECTOR)
+client.create_variable(f"{client.id} pos", player.rect.topleft, KTFL.net.VECTOR)
 
 while True:
-    camera.clear()
+    camera.clear((200, 200, 200))
     player.update(camera)
     for var in client.variables.copy():
         if "pos" in client.variables[var].name and client.variables[var].name != f"{client.id} pos":
             other_sprite.position = client.variables[var].value
-        print(client.variables[var].value, client.variables[var].name[:-3])
+        print(client.variables[var].value, client.variables[var].id)
     other_sprite.update_animation(screen.delta_time)
     camera.draw_sprite(other_sprite)
     var = client.get_var_by_name(f"{client.id} pos")
     if var:
-        client.update_var(var.id, player.rect.topleft, KTFL.net.VECTOR)
+        client.update_variable(var.id, player.rect.topleft, KTFL.net.VECTOR)
     screen.update()
