@@ -1,5 +1,6 @@
 import socket
 import random
+import sys
 import threading
 try:
     from .data import *
@@ -28,29 +29,38 @@ class Server:
         self.variables = variables
         self.taken_ids = []
         self.free_ids = []
+        self.running = False
         for i in range(256):
             self.free_ids.append(i)
         self.outs = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ins = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.outs.bind((socket.gethostname(), PORT_TO_CLIENT))
-        self.ins.bind((socket.gethostname(), PORT_TO_SERVER))
+        host = ""
+        self.outs.bind((host, PORT_TO_CLIENT))
+        self.ins.bind((host, PORT_TO_SERVER))
         print("Binding to ports")
         self.clients = []
 
     def run(self):
+        self.running = True
         self.outs.listen(self.size)
         self.ins.listen(self.size)
         print("Listening for connection")
-        while True:
-            cin, addrin = self.ins.accept()
-            cout, addrout = self.outs.accept()
+        while self.running:
+            try:
+                cin, addrin = self.ins.accept()
+                cout, addrout = self.outs.accept()
+            except OSError:
+                break
             print(f"Handling connection from {addrin[0]}")
             if addrin[0] == addrout[0]:
                 client = ServerClient(cin, cout, addrin[0])
                 client.id = self.clients.__len__()
                 self.clients.append(client)
-                client.threads.append(threading.Thread(target=self.handle_recv, args=(client,)).start())
-                client.threads.append(threading.Thread(target=self.handle_send, args=(client,)).start())
+                client.threads.append(threading.Thread(target=self.handle_recv, args=(client,)))
+                client.threads.append(threading.Thread(target=self.handle_send, args=(client,)))
+                for thread in client.threads:
+                    thread.start()
+        print("Stopped listening for connections")
 
     def handle_recv(self, client: ServerClient):
         while client.alive:
@@ -59,7 +69,13 @@ class Server:
             except ConnectionResetError:
                 self.close_connection(client)
                 return
-            message = Message.decode(received)
+            except ConnectionAbortedError:
+                break
+            try:
+                message = Message.decode(received)
+            except:
+                print("Error decoding message")
+                message = None
             if message:
                 if message.message_type == UPDATE_VAR:
                     if message.id in self.variables and \
@@ -107,6 +123,8 @@ class Server:
                     client.messages.append(Message(CLIENT_ID_REQUEST, client.id, NUMBER, 0))
                 elif message.message_type == UNUSED_ID_REQUEST:
                     client.messages.append(Message(UNUSED_ID_REQUEST, random.choice(self.free_ids), NUMBER, 0))
+        print(f"Receiving loop ended for {client.ip}")
+        return
 
     def handle_send(self, client: ServerClient):
         for id in self.variables:
@@ -132,9 +150,14 @@ class Server:
                         client.outs.send(msg.get_string_bytes())
                 except ConnectionResetError:
                     self.close_connection(client)
+                except ConnectionAbortedError:
+                    break
+        print(f"Sending loop ended for {client.ip}")
+        return
 
     def close_connection(self, client):
         try:
+            print("Attempting to close connection")
             self.clients.remove(client)
             client.alive = False
             for id in self.variables.copy():
@@ -143,14 +166,31 @@ class Server:
                     for c in self.clients:
                         c.messages.append(Message(DELETE_VAR, 0, NUMBER, id))
             print(f"Closing connection with {client.ip} [ID: {client.id}]")
-        except ValueError:
+            client.outs.send(Message(CLOSE_CONNECTION, 0, NUMBER, 0).get_bytes())
+            client.ins.close()
+            client.outs.close()
+        except (ValueError, ConnectionResetError, OSError):
             pass
+
+    def close(self):
+        self.outs.close()
+        self.ins.close()
+        self.running = False
+        for c in self.clients:
+            print("Trying to close")
+            self.close_connection(c)
 
 
 if __name__ == '__main__':
     server = Server(0)
-    threading.Thread(target=server.run).start()
+    run = threading.Thread(target=server.run)
+    run.start()
     while True:
-        input()
+        com = input()
+        if com == "exit":
+            server.close()
+            run.join(timeout=3)
+            break
         for id in server.variables:
             print(f"{server.variables[id].name}: {server.variables[id].value}")
+    print("Main thread ending")

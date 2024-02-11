@@ -22,6 +22,7 @@ class Client:
 
     def run(self):
         try:
+            print("Trying to connect")
             self.outs.connect((self.ip, PORT_TO_SERVER))
             self.ins.connect((self.ip, PORT_TO_CLIENT))
         except ConnectionRefusedError:
@@ -66,6 +67,7 @@ class Client:
                     self.id = int(message.data)
                 elif message.message_type == UNUSED_ID_REQUEST:
                     self.received_data.append(message)
+        print("Receiving loop ending")
 
     def sending(self):
         while self.connected:
@@ -78,8 +80,10 @@ class Client:
                     return
                 if message.string:
                     self.outs.send(message.get_string_bytes())
+        print("Sending loop ending")
 
     def close_connection(self):
+        print("Closing connection")
         self.connected = False
 
     def create_variable(self, name: str, value, data_type, id=None):  # NOTE: This function will pause running to wait for a response
@@ -130,10 +134,6 @@ class Client:
 if __name__ == '__main__':
     client = Client("local")
     client.run()
-    client.create_variable(2, "Hello", 1, NUMBER)
-    while True:
-        val = client.get_var_by_id(2)
-        if val:
-            print(val.value)
-        new = input()
-        client.update_variable(2, new, STRING)
+    while client.connected:
+        input()
+    print("Closing main thread")

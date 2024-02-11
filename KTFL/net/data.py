@@ -21,7 +21,7 @@ STRING = 3
 
 
 # standard ports for connection
-PORT_TO_CLIENT = 25565
+PORT_TO_CLIENT = 65525
 PORT_TO_SERVER = 65526
 
 
@@ -117,15 +117,18 @@ class Message:
 
     @staticmethod
     def decode(binary):
-        message_type = binary[0] // 16
-        variable_type = binary[0] % 16
-        id = binary[1]
-        if variable_type == VECTOR:
-            data = [int.from_bytes(bytes(binary[2:5]), "big", signed=True)/100,
-                    int.from_bytes(bytes(binary[5:8]), "big", signed=True)/100]
-        elif variable_type == NUMBER or variable_type == STRING:
-            data = int.from_bytes(bytes(binary[2:8]), "big", signed=True)/1000
         try:
-            return Message(message_type, data, variable_type,  id)
-        except UnboundLocalError:
-            print(message_type, variable_type)
+            message_type = binary[0] // 16
+            variable_type = binary[0] % 16
+            id = binary[1]
+            if variable_type == VECTOR:
+                data = [int.from_bytes(bytes(binary[2:5]), "big", signed=True)/100,
+                        int.from_bytes(bytes(binary[5:8]), "big", signed=True)/100]
+            elif variable_type == NUMBER or variable_type == STRING:
+                data = int.from_bytes(bytes(binary[2:8]), "big", signed=True)/1000
+            try:
+                return Message(message_type, data, variable_type,  id)
+            except UnboundLocalError:
+                print(message_type, variable_type)
+        except:
+            return None
