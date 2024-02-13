@@ -109,8 +109,8 @@ class Input:
             else:
                 xcoeff = camera.size.x / screen_size[0]
                 ycoeff = camera.size.y / screen_size[1]
-            return [math.trunc(((self.log["mouse"]["position"][0]-camera.position.x)*xcoeff) - camera.draw_offset.x),
-                    math.trunc(((self.log["mouse"]["position"][1]-camera.position.y)*ycoeff) - camera.draw_offset.y)]
+            return [math.trunc(((self.log["mouse"]["position"][0]-camera.position.x)*xcoeff) - camera.draw_offset.x + camera.world_pos.x),
+                    math.trunc(((self.log["mouse"]["position"][1]-camera.position.y)*ycoeff) - camera.draw_offset.y + camera.world_pos.y)]
         else:
             return self.log["mouse"]["position"]
 

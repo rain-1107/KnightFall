@@ -94,4 +94,4 @@ class Particle:
             if self.index == self.parent.images.__len__():
                 self.parent.dead.append(self)
                 return
-        camera.surface.blit(self.parent.images[self.index], self.position.list)
+        camera.draw_surf(self.parent.images[self.index], self.position.list)

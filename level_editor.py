@@ -272,12 +272,14 @@ def update_level_meta():
     except TypeError:
         par = current_level.layers[current_layer_index].meta["parallax"]
     try:
-        index = int(inputs["layerindex"])
+        index = int(inputs["layerindex"].text)
     except TypeError:
+        print("error")
         index = current_layer_index
     current_level.layers[current_layer_index].set_meta({"position": pos, "size":size, "parallax": para})
     if index != current_layer_index:
         layer = current_level.layers.pop(current_layer_index)
+        print(layer)
         current_level.layers.insert(index, layer)
         current_layer_index = current_level.layers.index(layer)
 
@@ -370,7 +372,8 @@ def update_menu():
         inputs[key].update(menu_cam)
 
     mouse_pos = Vector2(*screen.control.mouse_pos(level_cam))
-
+    if screen.control.on_action("delete"):
+        delete_sprite()
     if screen.control.mouse_scroll()[1] > 0:
         if mouse_pos.x+level_cam.draw_offset.x >=0 and mouse_pos.y+level_cam.draw_offset.y >= 0:
             zoom_out()

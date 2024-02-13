@@ -17,7 +17,7 @@ class Display:
         self.fps = fps
         self.clock = pygame.time.Clock()
         self.control = KTFL.control.Input()
-        self.delta_time = 1
+        self.delta_time = 0.0000001
 
     def update(self):
         for event in pygame.event.get():
@@ -56,6 +56,16 @@ class Camera:
             self.display.surface.blit(pygame.transform.scale(surf, self.display_size), self.position.list)
             return
         self.display.surface.blit(pygame.transform.scale(surf, self.display.size.list), self.position.list)
+
+    def lock_to(self, sprite):
+        self.lock_x_to(sprite)
+        self.lock_y_to(sprite)
+
+    def lock_x_to(self, sprite):
+        self.world_pos.x = round(sprite.top_left.x) + sprite.size.x / 2 - self.size.x / 2
+
+    def lock_y_to(self, sprite):
+        self.world_pos.y = round(sprite.top_left.y - sprite.size.y / 2 - self.size.y / 2)
 
     def draw_sprite(self, sprite: KTFL.sprite.Sprite):
         new_pos = sprite.top_left + self.draw_offset - self.world_pos

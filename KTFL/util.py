@@ -10,7 +10,6 @@ def load_image(img, size=[50,50]):
     if type(img) == str:
         if img in IMAGE_CACHE:
             return IMAGE_CACHE[img]
-        print("loading new image")
         try:
             _image = pygame.image.load(img).convert_alpha()
             IMAGE_CACHE[img] = _image

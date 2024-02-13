@@ -5,6 +5,4 @@
 *.pyc
 *.xml
 *.iml
-test.py
-main.py
 level editor/levels/new.json
