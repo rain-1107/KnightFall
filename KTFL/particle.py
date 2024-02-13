@@ -1,5 +1,7 @@
 import random
-import pygame
+
+from .load import load_image
+
 try:
     import shapely
     SHAPELY = True

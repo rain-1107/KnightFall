@@ -16,7 +16,7 @@ pygame.init()
 import KTFL.display
 import KTFL.gui
 import KTFL.control
-import KTFL.level
+import KTFL.load
 import KTFL.sprite
 import KTFL.util
 import KTFL.entities

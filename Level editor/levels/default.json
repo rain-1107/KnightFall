@@ -11,110 +11,39 @@
       200
     ]
   },
-  "physics": {
-    "objects": [
-      {
-        "rect": [
-          592,
-          0,
-          48,
+  "layers": [
+    {
+      "objects": [],
+      "sprites": [
+        {
+          "id": 86,
+          "position": [
+            56.0,
+            65.0
+          ],
+          "size": [
+            50,
+            50
+          ],
+          "animated": false,
+          "image_data": "img",
+          "tag": ""
+        }
+      ],
+      "meta": {
+        "size": [
+          640,
           360
         ],
-        "static": true,
-        "id": 3,
-        "tag": ""
-      },
-      {
-        "rect": [
+        "position": [
           0,
-          0,
-          48,
-          360
+          0
         ],
-        "static": true,
-        "id": 4,
-        "tag": ""
-      },
-      {
-        "rect": [
-          48,
-          0,
-          544,
-          48
-        ],
-        "static": true,
-        "id": 6,
-        "tag": ""
-      },
-      {
-        "rect": [
-          48,
-          312,
-          544,
-          48
-        ],
-        "static": true,
-        "id": 8,
-        "tag": ""
+        "parallax": [
+          1,
+          1
+        ]
       }
-    ]
-  },
-  "sprites": [
-    {
-      "id": 1,
-      "position": [
-        0.0,
-        0.0
-      ],
-      "size": [
-        48,
-        360
-      ],
-      "animated": false,
-      "image_data": "img",
-      "tag": ""
-    },
-    {
-      "id": 2,
-      "position": [
-        592.0,
-        0.0
-      ],
-      "size": [
-        48,
-        360
-      ],
-      "animated": false,
-      "image_data": "img",
-      "tag": ""
-    },
-    {
-      "id": 5,
-      "position": [
-        48.0,
-        0.0
-      ],
-      "size": [
-        544,
-        48
-      ],
-      "animated": false,
-      "image_data": "img",
-      "tag": ""
-    },
-    {
-      "id": 7,
-      "position": [
-        48.0,
-        312.0
-      ],
-      "size": [
-        544,
-        48
-      ],
-      "animated": false,
-      "image_data": "img",
-      "tag": ""
     }
   ]
 }

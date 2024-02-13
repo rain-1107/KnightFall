@@ -1,6 +1,7 @@
 import KTFL
 import pygame
 import json
+import random
 
 from KTFL.util import Vector2
 from KTFL.gui import draw_grid
@@ -14,8 +15,10 @@ screen.control.load_controls("level editor/input.json")
 text_surfaces = []
 buttons = {}
 inputs = {}
-current_level = KTFL.level.Level("level editor/levels/default.json")
+current_level = KTFL.load.Level("level editor/levels/default.json")
 current_level.load()
+current_layer_index = 0
+
 
 zoom = 1
 zoominfo = KTFL.gui.get_text_surf(f"Zoom amount : {zoom}")
@@ -24,7 +27,7 @@ original_size = Vector2(1300, 900)
 selected_sprite = None
 selected_sprite_offset = None
 
-menu_max_scroll = 180
+menu_max_scroll = 500
 
 
 def create_menu():
@@ -57,9 +60,23 @@ def create_menu():
                                       "level editor/bin/images/button1.png",
                                       function=zoom_out, text="Zoom out")
 
+    # ui for grid drawing
+    grid_top = 280
+    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (100, grid_top), "level editor/bin/images/input.png", text="")
+    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (180, grid_top), "level editor/bin/images/input.png", text="")
+    text_surfaces.append([KTFL.gui.get_text_surf("Grid"), (20, grid_top+5)])
+
+    buttons["grid"] = KTFL.gui.Switch((30, 30), (260, grid_top), "level editor/bin/images/off.png", "level editor/bin/images/on.png")
+
     # ui for creating sprites
     sprite_top = 340
     text_surfaces.append([KTFL.gui.get_text_surf("Sprite"), (20, sprite_top-5)])
+
+    buttons["spriteID"] = KTFL.gui.Switch((30, 30), (260, sprite_top + 140), "level editor/bin/images/off.png",
+                                      "level editor/bin/images/on.png")
+    buttons["spriteTag"] = KTFL.gui.Switch((30, 30), (260, sprite_top + 180), "level editor/bin/images/off.png",
+                                          "level editor/bin/images/on.png")
+
     inputs["file"] = KTFL.gui.TextInput((150, 30), (100, sprite_top+20), "level editor/bin/images/input1.png", text="")
     text_surfaces.append([KTFL.gui.get_text_surf("File"), (20, sprite_top+25)])
 
@@ -104,8 +121,9 @@ def create_menu():
     inputs["objtag"] = KTFL.gui.TextInput((150, 30), (100, object_top + 150), "level editor/bin/images/input1.png",
                                        text="")
     text_surfaces.append([KTFL.gui.get_text_surf("Tag"), (20, object_top + 155)])
+    buttons["objShowTag"] = KTFL.gui.Switch((30, 30), (260, object_top + 150), "level editor/bin/images/off.png",
+                                           "level editor/bin/images/on.png")
 
-    # TODO: create functions for these buttons
     buttons["objcreate"] = KTFL.gui.Button((75, 30), (20, object_top + 190), "level editor/bin/images/button0.png",
                                         "level editor/bin/images/button1.png",
                                         function=create_object, text="Create")
@@ -116,16 +134,48 @@ def create_menu():
                                         "level editor/bin/images/button1.png",
                                         function=delete_object, text="Delete")
 
-    # ui for grid drawing
-    grid_top = 280
-    inputs["gridsnapx"] = KTFL.gui.TextInput((75, 30), (100, grid_top), "level editor/bin/images/input.png", text="")
-    inputs["gridsnapy"] = KTFL.gui.TextInput((75, 30), (180, grid_top), "level editor/bin/images/input.png", text="")
-    text_surfaces.append([KTFL.gui.get_text_surf("Grid"), (20, grid_top+5)])
+    # layer meta data
+    layer_meta_top = 870
+    text_surfaces.append([KTFL.gui.get_text_surf("Layer meta"), (20, layer_meta_top)])
 
-    buttons["grid"] = KTFL.gui.Switch((30, 30), (260, grid_top), "level editor/bin/images/off.png", "level editor/bin/images/on.png")
+    text_surfaces.append([KTFL.gui.get_text_surf("Size"), (20, layer_meta_top + 30)])
+    inputs["layersizex"] = KTFL.gui.TextInput((75, 30), (100, layer_meta_top + 25), "level editor/bin/images/input.png",
+                                          text="")
+    inputs["layersizey"] = KTFL.gui.TextInput((75, 30), (180, layer_meta_top + 25), "level editor/bin/images/input.png",
+                                          text="")
 
-    # meta data stuff
-    meta_top = 870
+    text_surfaces.append([KTFL.gui.get_text_surf("Position"), (20, layer_meta_top + 70)])
+    inputs["layerposx"] = KTFL.gui.TextInput((75, 30), (100, layer_meta_top+ 65), "level editor/bin/images/input.png",
+                                              text="")
+    inputs["layerposy"] = KTFL.gui.TextInput((75, 30), (180, layer_meta_top + 65), "level editor/bin/images/input.png",
+                                              text="")
+
+    text_surfaces.append([KTFL.gui.get_text_surf("Parallax"), (20, layer_meta_top + 110)])
+    inputs["parallax_x"] = KTFL.gui.TextInput((75, 30), (100, layer_meta_top + 105), "level editor/bin/images/input.png",
+                                              text="")
+    inputs["parallax_y"] = KTFL.gui.TextInput((75, 30), (180, layer_meta_top + 105), "level editor/bin/images/input.png",
+                                              text="")
+
+    text_surfaces.append([KTFL.gui.get_text_surf("Draw index"), (18, layer_meta_top + 150)])
+    inputs["layerindex"] = KTFL.gui.TextInput((75, 30), (100, layer_meta_top + 145), "level editor/bin/images/input.png",
+                                             text="")
+
+    buttons["newlayer"] = KTFL.gui.Button((75, 30), (20, layer_meta_top + 180), "level editor/bin/images/button0.png",
+                                           "level editor/bin/images/button1.png", function=new_layer, text="New")
+    buttons["layermeta"] = KTFL.gui.Button((75, 30), (100, layer_meta_top + 180), "level editor/bin/images/button0.png",
+                                      "level editor/bin/images/button1.png", function=update_level_meta, text="Set")
+    buttons["deletelayer"] = KTFL.gui.Button((75, 30), (180, layer_meta_top + 180), "level editor/bin/images/button0.png",
+                                          "level editor/bin/images/button1.png", function=delete_layer, text="Delete")
+
+    text_surfaces.append([KTFL.gui.get_text_surf("Select layer"), (110, layer_meta_top + 230)])
+    buttons["prev_layer"] = KTFL.gui.Button((75, 30), (70, layer_meta_top + 250), "level editor/bin/images/button0.png",
+                                      "level editor/bin/images/button1.png", function=prev_layer, text="<")
+    buttons["next_layer"] = KTFL.gui.Button((75, 30), (155, layer_meta_top + 250), "level editor/bin/images/button0.png",
+                                            "level editor/bin/images/button1.png", function=next_layer, text=">")
+    prev_layer()
+
+    # level meta data
+    meta_top = 1170
     text_surfaces.append([KTFL.gui.get_text_surf("Level meta"), (20, meta_top)])
 
     text_surfaces.append([KTFL.gui.get_text_surf("Name"), (20, meta_top+30)])
@@ -162,7 +212,7 @@ def move_cam_down():
 
 def load_level():
     global current_level
-    current_level = KTFL.level.Level("level editor/levels/"+inputs["load"].text+".json")
+    current_level = KTFL.load.Level("level editor/levels/"+inputs["load"].text+".json")
     current_level.load()
     inputs["backgroundr"].text = str(current_level.meta["background"][0])
     inputs["backgroundg"].text = str(current_level.meta["background"][1])
@@ -207,29 +257,102 @@ def update_meta():
     current_level.meta = {"name": name, "size": size, "background": background}
 
 
+def update_level_meta():
+    global current_layer_index
+    try:
+        size = [int(inputs["layersizex"].text), int(inputs["layersizey"].text)]
+    except TypeError:
+        size = current_level.layers[current_layer_index].meta["size"]
+    try:
+        pos = [int(inputs["layerposx"].text), int(inputs["layerposy"].text)]
+    except TypeError:
+        pos = current_level.layers[current_layer_index].meta["position"]
+    try:
+        para = [float(inputs["parallax_x"].text), float(inputs["parallax_y"].text)]
+    except TypeError:
+        par = current_level.layers[current_layer_index].meta["parallax"]
+    try:
+        index = int(inputs["layerindex"])
+    except TypeError:
+        index = current_layer_index
+    current_level.layers[current_layer_index].set_meta({"position": pos, "size":size, "parallax": para})
+    if index != current_layer_index:
+        layer = current_level.layers.pop(current_layer_index)
+        current_level.layers.insert(index, layer)
+        current_layer_index = current_level.layers.index(layer)
+
+def prev_layer():
+    global current_layer_index
+    current_layer_index -= 1
+    if current_layer_index < 0:
+        current_layer_index = 0
+
+    inputs["layersizex"].text = str(int(current_level.layers[current_layer_index].size.x))
+    inputs["layersizey"].text = str(int(current_level.layers[current_layer_index].size.y))
+    inputs["layerposx"].text = str(int(current_level.layers[current_layer_index].position.x))
+    inputs["layerposy"].text = str(int(current_level.layers[current_layer_index].position.y))
+    inputs["parallax_x"].text = str(current_level.layers[current_layer_index].parallax.x)
+    inputs["parallax_y"].text = str(current_level.layers[current_layer_index].parallax.y)
+    inputs["layerindex"].text = str(current_layer_index)
+
+def next_layer():
+    global current_layer_index
+    current_layer_index += 1
+    if current_layer_index >= current_level.layers.__len__():
+        current_layer_index = current_level.layers.__len__()-1
+
+    inputs["layersizex"].text = str(int(current_level.layers[current_layer_index].size.x))
+    inputs["layersizey"].text = str(int(current_level.layers[current_layer_index].size.y))
+    inputs["layerposx"].text = str(int(current_level.layers[current_layer_index].position.x))
+    inputs["layerposy"].text = str(int(current_level.layers[current_layer_index].position.y))
+    inputs["parallax_x"].text = str(current_level.layers[current_layer_index].parallax.x)
+    inputs["parallax_y"].text = str(current_level.layers[current_layer_index].parallax.y)
+    inputs["layerindex"].text = str(current_layer_index)
+
+def new_layer():
+    global current_layer_index
+    current_level.new_layer()
+    current_layer_index = current_level.layers.__len__() - 1
+    next_layer()
+
+def delete_layer():
+    global current_layer_index
+    if current_level.layers.__len__() > 1:
+        current_level.delete_layer(current_level.layers[current_layer_index])
+        current_layer_index = 0
+        prev_layer()
+
 def update_level_cam():
     level_cam.clear(current_level.meta["background"])
     if inputs["gridsnapx"].text and inputs["gridsnapy"].text and buttons["grid"].on:
         draw_grid(level_cam, float(inputs["gridsnapx"].text), float(inputs["gridsnapy"].text), pygame.rect.Rect(0, 0, *current_level.meta["size"]))
 
     pygame.draw.rect(level_cam.surface, (0, 0, 0), (
-        level_cam.draw_offset.x, level_cam.draw_offset.y, current_level.meta["size"][0] + 1, current_level.meta["size"][1] + 1), width=2)
-    for sprite in current_level.sprites:
-        level_cam.draw_sprite(sprite)
+        level_cam.draw_offset.x, level_cam.draw_offset.y, current_level.meta["size"][0] + 1,
+        current_level.meta["size"][1] + 1), width=1)
+    pygame.draw.rect(level_cam.surface, (0, 0, 200), (
+        level_cam.draw_offset.x + current_level.layers[current_layer_index].position.x,
+        level_cam.draw_offset.y + current_level.layers[current_layer_index].position.y,
+        current_level.layers[current_layer_index].size.x + 1,
+        current_level.layers[current_layer_index].size.y + 1), width=1)
+
+    current_level.layers[current_layer_index].draw(level_cam, True)
+    for sprite in current_level.layers[current_layer_index].sprites:
         pos = sprite.top_left.copy()
-        pos.x += 5
-        pos.y += 5
-        level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(sprite.id)), position=pos.list)
-        if sprite.tag:
+        if buttons["spriteID"].on:
+            pos.x += 5 + current_level.layers[current_layer_index].position.x
+            pos.y += 5 + current_level.layers[current_layer_index].position.y
+            level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(sprite.id)), position=pos.list)
+        if sprite.tag and buttons["spriteTag"].on:
             tag_text = KTFL.gui.get_text_surf(f"{sprite.tag}")
-            level_cam.surface.blit(tag_text, ((sprite.size.x / 2) - (tag_text.get_size()[0] / 2) + sprite.position.x + level_cam.draw_offset.x,
-                                              sprite.size.y - (tag_text.get_size()[1] / 2) + sprite.position.y + level_cam.draw_offset.y))
-    for obj in current_level.objects:
+            level_cam.surface.blit(tag_text, ((sprite.size.x / 2) - (tag_text.get_size()[0] / 2) + sprite.position.x + level_cam.draw_offset.x + current_level.layers[current_layer_index].position.x,
+                                              sprite.size.y - (tag_text.get_size()[1] / 2) + sprite.position.y + level_cam.draw_offset.y + current_level.layers[current_layer_index].position.y))
+    for obj in current_level.layers[current_layer_index].objects:
         rect = obj.rect
         pos = [rect.right - 15, rect.top + 5]
         pygame.draw.rect(level_cam.surface, (255, 255, 255), (rect.left + level_cam.draw_offset.x, rect.top + level_cam.draw_offset.y, rect.w, rect.h), width=1)
         level_cam.draw_surf(KTFL.gui.get_text_surf(text=str(obj.id), colour=(255, 255, 255)), position=pos)
-        if obj.tag:
+        if obj.tag and buttons["objShowTag"].on:
             tag_text = KTFL.gui.get_text_surf(f"{obj.tag}",colour=(255, 255, 255))
             level_cam.surface.blit(tag_text, ((obj.rect.w / 2) - (tag_text.get_size()[0] / 2) + obj.rect.left + level_cam.draw_offset.x,
                                               obj.rect.h - (tag_text.get_size()[1] / 2) + obj.rect.top + level_cam.draw_offset.y - 10))
@@ -249,14 +372,14 @@ def update_menu():
     mouse_pos = Vector2(*screen.control.mouse_pos(level_cam))
 
     if screen.control.mouse_scroll()[1] > 0:
-        if mouse_pos.x >=0 and mouse_pos.y >= 0:
+        if mouse_pos.x+level_cam.draw_offset.x >=0 and mouse_pos.y+level_cam.draw_offset.y >= 0:
             zoom_out()
         else:
             menu_cam.draw_offset.y -= 50
             if menu_cam.draw_offset.y < -menu_max_scroll:
                 menu_cam.draw_offset.y = -menu_max_scroll
     elif screen.control.mouse_scroll()[1] < 0:
-        if mouse_pos.x >= 0 and mouse_pos.y >= 0:
+        if mouse_pos.x+level_cam.draw_offset.x >= 0 and mouse_pos.y+level_cam.draw_offset.y >= 0:
             zoom_in()
         else:
             menu_cam.draw_offset.y += 50
@@ -272,15 +395,13 @@ def update_menu():
     if screen.control.on_action("level left"):
         move_cam_left()
 
-    # makes ugly background idk how to fix maybe draw old text and then new or smth icba
     pygame.draw.rect(menu_cam.surface, (current_level.meta["background"]), (menu_cam.size.x - zoominfo.get_width(), menu_cam.size.y - zoominfo.get_height(), zoominfo.get_width(), zoominfo.get_height()))
     zoominfo = KTFL.gui.get_text_surf(f"Zoom amount : {zoom}")
     menu_cam.surface.blit(zoominfo, (menu_cam.size.x - zoominfo.get_width(), menu_cam.size.y - zoominfo.get_height()))
 
-    # sprite click event TODO: currently sprite hitbox is not accurate to view
     if screen.control.mouse_button(1) == "down":
-        for sprite in current_level.sprites:
-            if sprite.is_point_in_sprite(mouse_pos):
+        for sprite in current_level.layers[current_layer_index].sprites:
+            if sprite.is_point_in_sprite(mouse_pos-current_level.layers[current_layer_index].position):
                 selected_sprite = sprite
                 selected_sprite_offset = mouse_pos - sprite.position
                 inputs["file"].text = sprite.image_file
@@ -309,33 +430,35 @@ def create_sprite():
     try:
         position = [float(inputs["positionx"].text), float(inputs["positiony"].text)]
     except (TypeError, IndexError):
-        print("Invalid position try: 'x,y' where x and y are numbers")
         return
 
     try:
         size = [float(inputs["sizex"].text), float(inputs["sizey"].text)]
     except (TypeError, IndexError):
-        print("Invalid position try: 'x,y' where x and y are numbers")
         return
 
-    try:
-        id = int(inputs["id"].text)
-    except TypeError:
-        print("Invalid ID")
-        return
+    if inputs["id"].text:
+        try:
+            id = int(inputs["id"].text)
+        except TypeError:
+            print("Invalid ID")
+            return
+    else:
+        id = current_level.layers[current_layer_index].get_unused_sprite_id()
 
-    if current_level.get_sprite_by_id(id):
+
+    if current_level.layers[current_layer_index].get_sprite_by_id(id):
         print("Can not have duplicate sprite IDs")
         return
 
     tag = inputs["tag"].text
-    current_level.add_sprite(KTFL.sprite.Sprite(size, position, file, id=id, tag=tag))
+    current_level.layers[current_layer_index].add_sprite(KTFL.sprite.Sprite(size, position, file, id=id, tag=tag))
 
 
 def delete_sprite():
     id = int(inputs["id"].text)
     if id:
-        current_level.delete_sprite(id)
+        current_level.layers[current_layer_index].delete_sprite(id)
 
 
 def edit_sprite():
@@ -344,7 +467,7 @@ def edit_sprite():
     except ValueError:
         print("Invalid id")
         return
-    sprite = current_level.get_sprite_by_id(id)
+    sprite = current_level.layers[current_layer_index].get_sprite_by_id(id)
     if not sprite:
         edit_object()
         return
@@ -375,18 +498,17 @@ def create_object():
         print("Invalid position try: 'x,y' where x and y are numbers")
         return
 
-    try:
-        id = int(inputs["objid"].text)
-    except TypeError:
-        print("Invalid ID")
-        return
-
-    if current_level.get_object_by_id(id):
-        print("Can not have duplicate object IDs")
-        return
+    if inputs["objid"].text:
+        try:
+            id = int(inputs["objid"].text)
+        except TypeError:
+            print("Invalid ID")
+            return
+    else:
+        id = current_level.layers[current_layer_index].get_unused_object_id()
 
     tag = inputs["objtag"].text
-    current_level.add_object(pygame.rect.Rect(position[0], position[1], size[0], size[1]), id, True, tag=tag)
+    current_level.layers[current_layer_index].add_object(pygame.rect.Rect(position[0], position[1], size[0], size[1]), id, True, tag=tag)
 
 
 def edit_object():
@@ -395,7 +517,7 @@ def edit_object():
     except ValueError:
         print("Invalid id")
         return
-    obj = current_level.get_object_by_id(id)
+    obj = current_level.layers[current_layer_index].get_object_by_id(id)
     if not obj:
         return
     position = [obj.rect.x, obj.rect.y]
@@ -413,10 +535,13 @@ def edit_object():
     obj.rect.update(*position, *size)
 
 def delete_object():
-    id = int(inputs["id"].text)
+    id = int(inputs["objid"].text)
     if id:
-        current_level.delete_object(id)
+        current_level.layers[current_layer_index].delete_object(id)
 
+def draw_layer(index):
+    layer = current_level.layers[index]
+    layer.draw(level_cam, True)
 
 
 create_menu()

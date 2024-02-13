@@ -1,6 +1,7 @@
 /pygame/
 /bin/
 /.vscode/
+/images/sprite pack/
 *.pyc
 *.xml
 *.iml

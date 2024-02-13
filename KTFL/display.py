@@ -20,7 +20,6 @@ class Display:
         self.delta_time = 1
 
     def update(self):
-
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -49,6 +48,7 @@ class Camera:
         self.surface = pygame.surface.Surface(size, pygame.SRCALPHA)
         self.surface.set_clip((0, 0, self.size.x, self.size.y))
         self.draw_offset = Vector2(0, 0)
+        self.world_pos = Vector2(0, 0)
 
     def update(self):
         surf = self.surface
@@ -58,11 +58,11 @@ class Camera:
         self.display.surface.blit(pygame.transform.scale(surf, self.display.size.list), self.position.list)
 
     def draw_sprite(self, sprite: KTFL.sprite.Sprite):
-        new_pos = sprite.top_left+self.draw_offset
+        new_pos = sprite.top_left + self.draw_offset - self.world_pos
         self.surface.blit(sprite.image, new_pos.list)
 
-    def draw_surf(self, surf, position):
-        position = Vector2.list_to_vec(position) + self.draw_offset
+    def draw_surf(self, surf, position, parallax=Vector2(1, 1)):
+        position = Vector2.list_to_vec(position) + self.draw_offset - (self.world_pos*parallax)
         self.surface.blit(surf, position.list)
 
     def delete(self):

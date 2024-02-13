@@ -1,4 +1,5 @@
 import pygame
+
 from .util import *
 from copy import deepcopy
 
@@ -21,7 +22,7 @@ class Sprite:
             self._image.fill(colour)
         self.size = self.image.get_size()
 
-    def draw_to(self, surf: pygame.surface.Surface):
+    def draw_to(self, surf: pygame.surface.Surface):  # NOTE: not intended for usual use, refer to Camera.draw_sprite()
         surf.blit(self.image, self.top_left.list)
 
     def is_point_in_sprite(self, point):
@@ -80,8 +81,8 @@ class Sprite:
 
 
 class AnimatedSprite(Sprite):
-    def __init__(self, size, position, image_data: dict, centered=False, id=0):
-        super().__init__(size, position, id=id, centered=centered)
+    def __init__(self, size, position, image_data: dict, centered=False, id=0, tag=""):
+        super().__init__(size, position, id=id, centered=centered, tag=tag)
         self.raw_data = deepcopy(image_data)
         self.image_data = deepcopy(image_data)
         for list in self.image_data:
