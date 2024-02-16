@@ -5,7 +5,7 @@ import KTFL.control
 FONT = pygame.font.Font("freesansbold.ttf", 15)
 
 
-def draw_grid(camera, sx, sy, inside_rect):
+def draw_grid(camera, sx, sy, inside_rect):  # TODO: code will have to be replaced
     surf = camera.surface
     for x in range(inside_rect.left, inside_rect.right, int(sx)):
         pygame.draw.line(surf, (0, 0, 0), (x + camera.draw_offset.x, inside_rect.top + camera.draw_offset.y),
@@ -15,7 +15,7 @@ def draw_grid(camera, sx, sy, inside_rect):
                          (inside_rect.right + camera.draw_offset.x, y + camera.draw_offset.y))
 
 
-def get_text_surf(text, font=None, colour=(0, 0, 0)):
+def get_text_surf(text, font=None, colour=(0, 0, 0)):  # TODO: needs to use caching to create textures and to be able to return a string texture
     if font:
         return font.render(text, False, colour)
     return FONT.render(text, False, colour)
