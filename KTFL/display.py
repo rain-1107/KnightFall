@@ -19,7 +19,7 @@ class Display:
         self.control = KTFL.control.Input()
         self.delta_time = 0.0000001
 
-    def update(self):
+    def update(self):  # TODO: add drawing code here for all sprites for optimisation (OpenGL); use batching etc.
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 sys.exit()
@@ -40,7 +40,7 @@ class Display:
 
 
 class Camera:
-    def __init__(self, size, display_size=0, position=(0, 0)):
+    def __init__(self, size, display_size=0, position=(0, 0)):  # TODO: add relevant variables for drawing in OpenGL
         self.size = Vector2.list_to_vec(size)
         self.display = None
         self.display_size = display_size

@@ -11,7 +11,7 @@ from .util import *
 
 
 class ParticleHandler:
-    def __init__(self, images, position=[0,0], level=None):
+    def __init__(self, images, position=[0,0], level=None):  # TODO: Create sprite sheet for instancing particles (OpenGL)
         self.position = Vector2.list_to_vec(position)
         self.particles = []
         self.dead = []
@@ -94,4 +94,4 @@ class Particle:
             if self.index == self.parent.images.__len__():
                 self.parent.dead.append(self)
                 return
-        camera.draw_surf(self.parent.images[self.index], self.position.list)
+        camera.draw_surf(self.parent.images[self.index], self.position.list)  # TODO: add instancing of particles for OpenGL

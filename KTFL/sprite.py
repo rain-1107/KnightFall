@@ -4,6 +4,9 @@ from .util import *
 from copy import deepcopy
 
 
+# TODO: this file can be renamed to draw.py since a lot of draw logic will have to be added here
+# TODO: add ability to draw lines
+
 class Sprite:
     def __init__(self, size, position, image=None, colour=(255, 255, 255), centered=False, id=0, tag="", level=None):
         self.id = id
@@ -22,7 +25,7 @@ class Sprite:
             self._image.fill(colour)
         self.size = self.image.get_size()
 
-    def draw_to(self, surf: pygame.surface.Surface):  # NOTE: not intended for usual use, refer to Camera.draw_sprite()
+    def draw_to(self, surf: pygame.surface.Surface):  # TODO: abstract this to add to draw list
         surf.blit(self.image, self.top_left.list)
 
     def is_point_in_sprite(self, point):

@@ -2,6 +2,7 @@ import pygame
 import json
 import math
 
+
 class Input:
     def __init__(self, keyboard_config="", allow_controller=False):
         self.log = {"input_type": "keyboard", "actions": {}, "mouse": {}, "keys": {}}

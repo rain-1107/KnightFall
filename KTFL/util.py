@@ -6,7 +6,7 @@ from .gui import get_text_surf
 IMAGE_CACHE = {}
 
 
-def load_image(img, size=[50,50]):
+def load_image(img, size=[50,50]):  # TODO: load as an opengl texture (maybe move to draw.py)
     if type(img) == str:
         if img in IMAGE_CACHE:
             return IMAGE_CACHE[img]

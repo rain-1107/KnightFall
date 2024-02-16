@@ -5,7 +5,7 @@ import pygame
 import sys
 import random
 
-screen = KTFL.display.Display(fps=60, size=(800, 450), fullscreen=False)
+screen = KTFL.display.Display(fps=60, size=(800, 450), fullscreen=True)
 game_cam = KTFL.display.Camera((256, 144))
 screen.add_camera(game_cam)
 ui_cam = KTFL.display.Camera(size=(800, 400))
