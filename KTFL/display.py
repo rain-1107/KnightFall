@@ -9,7 +9,6 @@ from .util import *
 
 class Display:
     def __init__(self, size=(500, 500), fullscreen=False, fps=60):
-        global default_shader
         if fullscreen:
             self.surface = pygame.display.set_mode((0, 0), pygame.FULLSCREEN | pygame.OPENGL | pygame.DOUBLEBUF)
             self.size = KTFL.util.Vector2.list_to_vec(self.surface.get_size())
@@ -24,8 +23,16 @@ class Display:
         self.fps = fps
         self.clock = pygame.time.Clock()
         self.control = KTFL.control.Input()
-        self.delta_time = 0.0000001
-        default_shader = KTFL.draw.Shader("shaders/spr_vertex.glsl", "shaders/spr_frag.glsl")
+        self.delta_time = 1
+        self.shader = KTFL.draw.create_shader("KTFL/shaders/spr_vertex.glsl", "KTFL/shaders/spr_frag.glsl")
+        glUseProgram(self.shader)
+        glUniform1i(glGetUniformLocation(self.shader, "imageTexture"), 0)
+        KTFL.draw.DEFAULT_SHADER = self.shader
+        self.draw_queue = {}
+
+    def load_quads(self):
+        for texture in KTFL.draw.TEXTURE_CACHE:
+            KTFL.draw.TEXTURE_CACHE[texture].quad.load(self.size.list, self.shader)
 
     def update(self):  # TODO: add drawing code here for all sprites for optimisation (OpenGL); use batching etc.or event in pygame.event.get():
         for event in pygame.event.get():
@@ -33,8 +40,11 @@ class Display:
                 sys.exit()
         # refresh screen
         glClear(GL_COLOR_BUFFER_BIT)
-        for camera in self.cameras:
-            camera.update()
+        glUseProgram(self.shader)
+        for image in self.draw_queue:
+            KTFL.draw.TEXTURE_CACHE[image].use()
+            for instance in self.draw_queue[image]:
+                KTFL.draw.TEXTURE_CACHE[image].quad.draw(instance[0], instance[1])
         pygame.display.flip()
         self.clock.tick(self.fps)
         self.delta_time = 1 / (self.clock.get_fps()+1)
@@ -42,6 +52,8 @@ class Display:
 
     def add_camera(self, camera):
         camera.display = self
+        if not camera.display_size:
+            camera.display_size = self.size
         self.cameras.append(camera)
 
     def add_cameras(self, cameras):
@@ -60,44 +72,10 @@ class Camera:
         self.draw_offset = Vector2(0, 0)
         self.world_pos = Vector2(0, 0)
 
-        # THE DRAW QUEUE SYSTEM
-        # basically keep track of all things that share an image
-        # then draw them in batches, each batch being about 256 sprites (TODO : find better batch size)
-        # however only draw in batches if there are enough sprites to fill one
-        # as to not waste draw time
-
-        self.draw_queue = {}
-        self.quad = KTFL.draw.Quad()
-
-    def queue_sprite(self, material, rect):
-        if str(material.id) in self.draw_queue:
-            self.draw_queue[material.id].append([material, rect])
-        else:
-            self.draw_queue[material.id] = []
-            self.draw_queue[material.id].append([material, rect])
-
-    def update(self):
-        surf = self.surface
-
-        for key in self.draw_queue:
-            sprs_img = self.draw_queue[key]
-            if len(sprs_img) >= 256:
-                # TODO : implement batching
-                pass
-
-            current_material = sprs_img[0][0]
-            current_material.use(True)
-            for spr in sprs_img:
-                # self.quad.draw(instances=1)
-                pass
-
-        # clear queue
-        self.draw_queue = {}
-
-        # if self.display_size:
-        #     self.display.surface.blit(pygame.transform.scale(surf, self.display_size), self.position.list)
-        #     return
-        # self.display.surface.blit(pygame.transform.scale(surf, self.display.size.list), self.position.list)
+    def draw_sprite(self, sprite):
+        if sprite.image in self.display.draw_queue:
+            self.display.draw_queue[sprite.image].append([self, sprite.top_left.list])
+        self.display.draw_queue[sprite.image] = [[self, sprite.top_left.list]]
 
     def lock_to(self, sprite):
         self.lock_x_to(sprite)
@@ -108,14 +86,6 @@ class Camera:
 
     def lock_y_to(self, sprite):
         self.world_pos.y = round(sprite.top_left.y - sprite.size.y / 2 - self.size.y / 2)
-
-    def draw_sprite(self, sprite):
-        new_pos = sprite.top_left + self.draw_offset - self.world_pos
-        self.surface.blit(sprite.image, new_pos.list)
-
-    def draw_surf(self, surf, position, parallax=Vector2(1, 1)):
-        position = Vector2.list_to_vec(position) + self.draw_offset - (self.world_pos*parallax)
-        self.surface.blit(surf, position.list)
 
     def delete(self):
         self.display.cameras.remove(self)

@@ -7,9 +7,12 @@ layout (location=2) in vec2 vertexTexCoord;
 out vec3 fragmentColor;
 out vec2 fragmentTexCoord;
 
+uniform vec3 objectPos;
+uniform vec3 cameraScale;
+
 void main()
 {
-    gl_Position = vec4(vertexPos, 1.0);
+    gl_Position = vec4((vertexPos + objectPos) * cameraScale, 1.0);
     fragmentColor = vertexColor;
     fragmentTexCoord = vertexTexCoord;
 }

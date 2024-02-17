@@ -2,8 +2,9 @@ import pygame
 from OpenGL.GL import *
 from OpenGL.GL.shaders import compileProgram, compileShader
 
-import KTFL.display
 from .util import *
+from .gui import get_text_surf
+
 from copy import deepcopy
 
 import numpy as np
@@ -12,60 +13,51 @@ import numpy as np
 
 
 # abstracted shaders idk if u wanted that but iI did it
-class Shader:
-    def __init__(self, vertex_filepath, fragment_filepath):
-        self.shader = None
-        self.replace_shader(vertex_filepath, fragment_filepath)
+def create_shader(vertex_filepath, fragment_filepath):
+    with open(vertex_filepath, 'r') as f:
+        vertex_src = f.readlines()
 
-    def __del__(self):
-        glDeleteProgram(self.shader)
+    with open(fragment_filepath, 'r') as f:
+        fragment_src = f.readlines()
 
-    def replace_shader(self, vertex_filepath, fragment_filepath):
-        if self.shader:
-            glDeleteProgram(self.shader)
-
-        with open(vertex_filepath, 'r') as f:
-            vertex_src = f.readlines()
-
-        with open(fragment_filepath, 'r') as f:
-            fragment_src = f.readlines()
-
-        self.shader = compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
-
-    def get_shader(self):
-        return self.shader
-
-    def use_shader(self):
-        glUseProgram(self.shader)
-        return self.shader  # felt like it
+    return compileProgram(compileShader(vertex_src, GL_VERTEX_SHADER), compileShader(fragment_src, GL_FRAGMENT_SHADER))
 
 
-default_shader = None
+DEFAULT_SHADER = None
 
 
+TEXTURE_CACHE = {}
+
+
+def load_texture(file, size=[50, 50], shader=DEFAULT_SHADER):  # NOTE: loads texture into memory does not return a usable object
+    global TEXTURE_CACHE
+    _image = file
+    if type(file) != str:
+        return
+    if file in TEXTURE_CACHE:
+        return
+    try:
+        _image = pygame.image.load(file).convert_alpha()
+    except FileNotFoundError:
+        _surf = pygame.surface.Surface(size)
+        _surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+        text = get_text_surf(f"{file}")
+        _surf.blit(text,
+                   ((size[0] / 2) - (text.get_size()[0] / 2), (size[1] / 2) - (text.get_size()[1] / 2)))
+        _image = _surf.convert()
+    texture = Material(_image)
+    TEXTURE_CACHE[file] = texture
+
+
+# For internal use
 class Material:
-    """
-        A basic texture.
-    """
     next_id = 0
 
-    def __init__(self, filepath=None, surface=None, shader=None):
-        global default_shader
-        """
-            Initialize and load the texture.
-
-            Parameters:
-
-                filepath: path to the image file.
-        """
-
+    def __init__(self, image):
         self.loaded = False
+        self.py_image = image
+        self.size = self.py_image.get_size()
         self.texture = glGenTextures(1)
-        if not default_shader:
-            default_shader = Shader("shaders/spr_vertex.glsl", "shaders/spr_frag.glsl")
-        if not shader:
-            shader = default_shader
-        self.shader = shader
         self.id = self.next_id
         self.next_id = self.next_id + 1
         glBindTexture(GL_TEXTURE_2D, self.texture)
@@ -74,53 +66,39 @@ class Material:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
 
-        image = None
-        image_width, image_height = None, None
-
-        # both ifs could be merged but cba
-        if filepath:
-            image = pygame.image.load(filepath).convert_alpha()
-            image_width, image_height = image.get_rect().size
-        if surface:
-            image = surface
-            image_width, image_height = surface.get_rect().size
         img_data = pygame.image.tostring(image, 'RGBA')
+        image_width, image_height = image.get_size()
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data)
         glGenerateMipmap(GL_TEXTURE_2D)
-        self.loaded = True
 
-    def use(self, use_shader=True) -> None:
-        """
-            Arm the texture for drawing.
-        """
-        if not self.loaded:
-            return
+        self.quad = Quad(image_width, image_height)
 
+    def use(self) -> None:
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture)
-        if use_shader and self.shader:
-            self.shader.use_shader()
 
     def __del__(self):
-        """
-            Free the texture.
-        """
         if self.loaded:
             glDeleteTextures(1, (self.texture,))
 
 
-# internal use
+# For internal use
 class Quad:
-    def __init__(self):
-        #                     Vertex 0: position (-0.5, 0.5, 0), color (1, 1, 1), UV (0, 0)
-        vertices = np.array([-0.5, 0.5, 0, 1, 1, 1, 0, 0,
-                             # Vertex 1: position (0.5, 0.5, 0), color (1, 1, 1), UV (1, 0)
-                             0.5, 0.5, 0, 1, 1, 1, 1, 0,
-                             # Vertex 2: position (-0.5, -0.5, 0), color (1, 1, 1), UV (0, 1)
-                             -0.5, -0.5, 0, 1, 1, 1, 0, 1,
-                             # Vertex 3: position (0.5, -0.5, 0), color (1, 1, 1), UV (1, 1)
-                             0.5, -0.5, 0, 1, 1, 1, 1, 1],
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
+        self.loaded = False
+
+    def load(self, display_size, shader):
+        self.shader = shader
+        self.display_size = display_size
+        x_co = 2 / display_size[0]
+        y_co = 2 / display_size[1]
+        vertices = np.array([0, 0, 0, 1, 1, 1, 0, 0,  # top left
+                             x_co * self.width, 0, 0, 1, 1, 1, 1, 0,  # top right
+                             0, -(y_co * self.height), 0, 1, 1, 1, 0, 1,  # bottom left
+                             x_co * self.width, -(y_co * self.height), 0, 1, 1, 1, 1, 1],  # bottom right
                             dtype=np.float32)
 
         # Define the indices to form a quad (two triangles)
@@ -153,7 +131,6 @@ class Quad:
         glEnableVertexAttribArray(1)
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(12))
 
-        # Enable the third attribute (UV) in the vertex shader
         glEnableVertexAttribArray(2)
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 32, ctypes.c_void_p(24))
 
@@ -162,20 +139,20 @@ class Quad:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, self.ibo)
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
-    def draw(self, instances=1):
-        if instances == 1:
-            glDrawElements(GL_TRIANGLES, self.index_count, GL_UNSIGNED_INT, self.ibo)
-        elif instances > 1:
-            """
-            GLenum mode,
-            GLsizei count,
-            GLenum type,
-            const void * indices,
-            GLsizei primcount
-            """
-            glDrawElementsInstanced(GL_TRIANGLES, self.index_count, GL_UNSIGNED_INT, self.ibo, instances)
+        self.camera_uniloc = glGetUniformLocation(self.shader, "cameraScale")
+        self.pos_uniloc = glGetUniformLocation(self.shader, "objectPos")
+        self.loaded = True
 
-    def __del__(self):
+    def draw(self, camera, position) -> None:
+        # arm for drawing
+        glUniform3f(self.camera_uniloc, camera.display_size.x / camera.size.x, camera.display_size.y / camera.size.y, 0)
+        glUniform3f(self.pos_uniloc, position[0] * (2 / self.display_size[0]) - 1,
+                    -(position[1] * (2 / self.display_size[1]) - 1), 0)
+        glBindVertexArray(self.vao)
+        # draw
+        glDrawElements(GL_TRIANGLES, self.index_count, GL_UNSIGNED_INT, None)
+
+    def destroy(self) -> None:
         glDeleteVertexArrays(1, (self.vao,))
         glDeleteBuffers(1, (self.vbo,))
 
@@ -187,20 +164,15 @@ class Sprite:
         self._size = Vector2.list_to_vec(size)
         self.top_left = Vector2(0, 0)
         self.position = position
-        self.image_file = image
+        self._image = image
+        load_texture(self._image)
         self._tag = tag
         self.level = level
 
-        if image:
-            self._image = load_image(image, self._size.list)
-        else:
-            self._image = pygame.surface.Surface(self.size.list)
-            self._image.fill(colour)
-        self.size = self.image.get_size()
-        self.material = Material(surface=self.image)
+        self.size = TEXTURE_CACHE[self._image].size
 
     def draw_to(self, cam):  # TODO: abstract this to add to draw list
-        cam.queue_sprite(self.material, pygame.rect.Rect(self.top_left.x, self.top_left.y, self.size.x, self.size.y))
+        cam.draw_sprite(self)
 
     def is_point_in_sprite(self, point):
         point = Vector2.list_to_vec(point)

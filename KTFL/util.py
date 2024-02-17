@@ -1,27 +1,6 @@
 import math
 import pygame
 import random
-from .gui import get_text_surf
-
-IMAGE_CACHE = {}
-
-
-def load_image(img, size=[50,50]):  # TODO: load as an opengl texture (maybe move to draw.py)
-    if type(img) == str:
-        if img in IMAGE_CACHE:
-            return IMAGE_CACHE[img]
-        try:
-            _image = pygame.image.load(img).convert_alpha()
-            IMAGE_CACHE[img] = _image
-        except FileNotFoundError:
-            _surf = pygame.surface.Surface(size)
-            _surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-            text = get_text_surf(f"{img}")
-            _surf.blit(text,
-                       ((size[0] / 2) - (text.get_size()[0] / 2), (size[1] / 2) - (text.get_size()[1] / 2)))
-            _image = _surf.convert()
-        return _image
-    return img
 
 
 def rect_collision_list(obj, obj_list):

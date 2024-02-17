@@ -1,6 +1,6 @@
 import random
 
-from .load import load_image
+from .draw import load_texture
 
 try:
     import shapely
@@ -19,7 +19,8 @@ class ParticleHandler:
         self.level = level
         self.images = []
         for image in images:
-            self.images.append(load_image(image, size=[1,1]))
+            # self.images.append(load_image(image, size=[1,1]))
+            pass
 
     def update(self, camera):
         dt = camera.display.delta_time
