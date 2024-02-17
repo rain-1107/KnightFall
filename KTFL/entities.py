@@ -1,5 +1,5 @@
 import pygame
-import KTFL.sprite
+import KTFL.draw
 from .util import *
 import json
 
@@ -13,7 +13,7 @@ class OverheadPlayer:
         self.size = Vector2.list_to_vec(self.data["size"])
         self.position = Vector2.list_to_vec(self.data["position"])
         self.rect = pygame.rect.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
-        self.sprite = KTFL.sprite.AnimatedSprite(self.size, self.position, self.data["image_data"], centered=True)
+        self.sprite = KTFL.draw.AnimatedSprite(self.size, self.position, self.data["image_data"], centered=True)
         self.speed = 100
         self.level = None
 
@@ -77,7 +77,7 @@ class SidePlayer:
         self.size = Vector2.list_to_vec(self.data["size"])
         self.position = Vector2.list_to_vec(self.data["position"])
         self.rect = pygame.rect.Rect(self.position.x, self.position.y, self.size.x, self.size.y)
-        self.sprite = KTFL.sprite.AnimatedSprite(self.size, self.position, self.data["image_data"], centered=True)
+        self.sprite = KTFL.draw.AnimatedSprite(self.size, self.position, self.data["image_data"], centered=True)
         self.velocity = Vector2(0, 0)
         self.speed = 100
         self.gravity = 300

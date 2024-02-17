@@ -5,7 +5,7 @@ import json
 
 from .gui import get_text_surf
 from .util import *
-from .sprite import Sprite, AnimatedSprite
+from .draw import Sprite, AnimatedSprite
 
 
 class Level:
@@ -95,7 +95,7 @@ class Layer:
     def draw(self, camera, absolute=False):
         self.surf.fill((0, 0, 0, 0))
         for s in self.sprites:
-            s.draw_to(self.surf)
+            s.draw_to(camera)
         camera.draw_surf(self.surf, self.position, parallax=self.parallax)
 
     def get_sprite_by_tag(self, tag):

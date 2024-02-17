@@ -449,13 +449,12 @@ def create_sprite():
     else:
         id = current_level.layers[current_layer_index].get_unused_sprite_id()
 
-
     if current_level.layers[current_layer_index].get_sprite_by_id(id):
         print("Can not have duplicate sprite IDs")
         return
 
     tag = inputs["tag"].text
-    current_level.layers[current_layer_index].add_sprite(KTFL.sprite.Sprite(size, position, file, id=id, tag=tag))
+    current_level.layers[current_layer_index].add_sprite(KTFL.draw.Sprite(size, position, file, id=id, tag=tag))
 
 
 def delete_sprite():

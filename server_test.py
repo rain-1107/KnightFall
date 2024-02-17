@@ -9,7 +9,7 @@ screen.add_camera(camera)
 
 player = KTFL.entities.OverheadPlayer("bin/entity data/player/player.json")
 image_data = json.load(open("bin/entity data/player/player.json"))["image_data"]
-other_sprite = KTFL.sprite.AnimatedSprite([24, 35], [100, 100], image_data, centered=True)
+other_sprite = KTFL.draw.AnimatedSprite([24, 35], [100, 100], image_data, centered=True)
 
 client = KTFL.net.client.Client("local")
 client.run()

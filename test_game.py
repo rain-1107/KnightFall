@@ -14,7 +14,7 @@ level = KTFL.load.Level("level editor/levels/test.json")
 level.load()
 player = KTFL.entities.SidePlayer("bin/entity data/player/player.json")
 player.add_to_level(level)
-square = KTFL.sprite.Sprite([24, 35], (112, 118.5), centered=True, colour=(0, 0, 0))
+square = KTFL.draw.Sprite([24, 35], (112, 118.5), centered=True, colour=(0, 0, 0))
 particles = KTFL.particle.ParticleHandler(["images/particles/dot.png"], level=level)
 
 

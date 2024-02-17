@@ -1,5 +1,5 @@
 import pygame
-import KTFL.sprite
+import KTFL.draw
 import KTFL.control
 
 FONT = pygame.font.Font("freesansbold.ttf", 15)
@@ -27,7 +27,7 @@ class Button:
         self.position = position
         self.function = function
         self.pressed = False
-        self.sprites = [KTFL.sprite.Sprite(size, position, image), KTFL.sprite.Sprite(size, position, select_image)]
+        self.sprites = [KTFL.draw.Sprite(size, position, image), KTFL.draw.Sprite(size, position, select_image)]
         self.text_surf = get_text_surf(text)
 
     def update(self, camera):
@@ -55,8 +55,8 @@ class Switch:
         if not on_highlighted:
             on_highlighted = on_image
         self.sprites = [
-            [KTFL.sprite.Sprite(size, position, off_image), KTFL.sprite.Sprite(size, position, off_highlighted)],
-            [KTFL.sprite.Sprite(size, position, on_image), KTFL.sprite.Sprite(size, position, on_highlighted)]]
+            [KTFL.draw.Sprite(size, position, off_image), KTFL.drwa.Sprite(size, position, off_highlighted)],
+            [KTFL.draw.Sprite(size, position, on_image), KTFL.draw.Sprite(size, position, on_highlighted)]]
         self.on = 0
 
     def update(self, camera):
@@ -74,7 +74,7 @@ class TextInput:
     def __init__(self, size, position, background_image, text_font=None, text=""):
         self.size = size
         self.position = position
-        self.sprite = KTFL.sprite.Sprite(size, position, background_image)
+        self.sprite = KTFL.draw.Sprite(size, position, background_image)
         self.text = text
         self.font = text_font
         self.pulse = 0.5
