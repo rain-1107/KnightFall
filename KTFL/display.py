@@ -95,6 +95,12 @@ class Camera:
             self.display.draw_queue[sprite.image].append([self, pos.list])
         self.display.draw_queue[sprite.image] = [[self, pos.list]]
 
+    def draw_text(self, text_obj, position):
+        pos = Vector2.list_to_vec(position)
+        if text_obj.font.name in self.display.draw_queue:
+            self.display.draw_queue[text_obj.font.name].append([self, pos.list])
+
+
     def lock_to(self, sprite):
         self.lock_x_to(sprite)
         self.lock_y_to(sprite)

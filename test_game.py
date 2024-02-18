@@ -9,8 +9,11 @@ screen.add_camera(game_cam)
 
 sprite = KTFL.sprite.Sprite((0, 0), (10, 10), "images/image2.png")
 
+text = KTFL.draw.Text("Hi", screen.size.list)
+text.load(screen.shader)
 screen.load_quads()
 
 while True:
-    game_cam.draw_sprite(sprite)
+    # game_cam.draw_sprite(sprite)
+    text.draw(game_cam, position=(10, 10))
     screen.update()

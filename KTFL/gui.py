@@ -55,7 +55,7 @@ class Switch:
         if not on_highlighted:
             on_highlighted = on_image
         self.sprites = [
-            [KTFL.draw.Sprite(size, position, off_image), KTFL.drwa.Sprite(size, position, off_highlighted)],
+            [KTFL.draw.Sprite(size, position, off_image), KTFL.draw.Sprite(size, position, off_highlighted)],
             [KTFL.draw.Sprite(size, position, on_image), KTFL.draw.Sprite(size, position, on_highlighted)]]
         self.on = 0
 
