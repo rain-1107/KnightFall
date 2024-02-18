@@ -28,6 +28,8 @@ DEFAULT_SHADER = None
 
 TEXTURE_CACHE = {}
 
+OPENGL_OBJECTS = []
+
 
 def load_texture(file, size=[50, 50], shader=DEFAULT_SHADER):  # NOTE: loads texture into memory does not return a usable object
     global TEXTURE_CACHE
@@ -54,6 +56,7 @@ class Material:
     next_id = 0
 
     def __init__(self, image):
+        OPENGL_OBJECTS.append(self)
         self.loaded = False
         self.py_image = image
         self.size = self.py_image.get_size()
@@ -64,21 +67,21 @@ class Material:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
 
         img_data = pygame.image.tostring(image, 'RGBA')
         image_width, image_height = image.get_size()
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img_data)
         glGenerateMipmap(GL_TEXTURE_2D)
-
+        print(glGetError())
         self.quad = Quad(image_width, image_height)
 
     def use(self) -> None:
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, self.texture)
 
-    def __del__(self):
+    def destroy(self):
         if self.loaded:
             glDeleteTextures(1, (self.texture,))
 
@@ -86,6 +89,7 @@ class Material:
 # For internal use
 class Quad:
     def __init__(self, width, height):
+        OPENGL_OBJECTS.append(self)
         self.width = width
         self.height = height
         self.loaded = False
@@ -146,6 +150,7 @@ class Quad:
     def draw(self, camera, position) -> None:
         # arm for drawing
         glUniform3f(self.camera_uniloc, camera.display_size.x / camera.size.x, camera.display_size.y / camera.size.y, 0)
+        print(camera.display_size.x, camera.size.x)
         glUniform3f(self.pos_uniloc, position[0] * (2 / self.display_size[0]) - 1,
                     -(position[1] * (2 / self.display_size[1]) - 1), 0)
         glBindVertexArray(self.vao)
@@ -153,113 +158,6 @@ class Quad:
         glDrawElements(GL_TRIANGLES, self.index_count, GL_UNSIGNED_INT, None)
 
     def destroy(self) -> None:
-        glDeleteVertexArrays(1, (self.vao,))
-        glDeleteBuffers(1, (self.vbo,))
-
-
-class Sprite:
-    def __init__(self, size, position, image=None, colour=(255, 255, 255), centered=False, id=0, tag="", level=None):
-        self.id = id
-        self.centered = centered
-        self._size = Vector2.list_to_vec(size)
-        self.top_left = Vector2(0, 0)
-        self.position = position
-        self._image = image
-        load_texture(self._image)
-        self._tag = tag
-        self.level = level
-
-        self.size = TEXTURE_CACHE[self._image].size
-
-    def draw_to(self, cam):  # TODO: abstract this to add to draw list
-        cam.draw_sprite(self)
-
-    def is_point_in_sprite(self, point):
-        point = Vector2.list_to_vec(point)
-        if self.top_left.x < point.x < self.top_left.x + self.size.x:
-            if self.top_left.y < point.y < self.top_left.y + self.size.y:
-                return True
-        return False
-
-    @property
-    def tag(self):
-        return self._tag
-
-    @tag.setter
-    def tag(self, new):
-        self._tag = new
-
-    @property
-    def image(self):
-        return self._image
-
-    @image.setter
-    def image(self, new):
-        self.image_file = new
-        load_image(new, self.size.list)
-
-    @property
-    def size(self) -> Vector2:
-        return self._size
-
-    @size.setter
-    def size(self, new):
-        self._size = Vector2.list_to_vec(new)
-
-    @property
-    def position(self) -> Vector2:
-        if self.centered:
-            return self.centre
-        return self.top_left
-
-    @position.setter
-    def position(self, new):
-        if self.centered:
-            self.centre = new
-            return
-        self.top_left = Vector2.list_to_vec(new)
-
-    @property
-    def centre(self) -> Vector2:
-        return Vector2(self.top_left.x + (self.size.x / 2), self.top_left.y + (self.size.y / 2))
-
-    @centre.setter
-    def centre(self, new):
-        _centre = Vector2.list_to_vec(new)
-        self.top_left.set(Vector2(_centre.x-self.size.x/2, _centre.y-self.size.y/2))
-
-
-class AnimatedSprite(Sprite):
-    def __init__(self, size, position, image_data: dict, centered=False, id=0, tag=""):
-        super().__init__(size, position, id=id, centered=centered, tag=tag)
-        self.raw_data = deepcopy(image_data)
-        self.image_data = deepcopy(image_data)
-        for list in self.image_data:
-            temp = []
-            for image in self.image_data[list]["images"]:
-                image = load_image(image, self.size.list)
-                temp.append(image)
-            self.image_data[list]["images"] = temp
-        self.index = 0
-        self.tick = 0
-        self.state = next(iter(self.image_data))
-        self.previous_state = next(iter(self.image_data))
-
-    def update_animation(self, delta_time: float = 1 / 60):
-        self.tick -= delta_time
-        if self.tick < 0:
-            self.tick = self.image_data[self.state]["tick"]
-            self.index += 1
-            if self.index > self.image_data[self.state]["images"].__len__() - 1:
-                if self.image_data[self.state]["loop"]:
-                    self.index = 0
-                else:
-                    self.change_state(self.previous_state)
-            self._image = self.image_data[self.state]["images"][self.index]
-            self.size = self.image.get_size()
-
-    def change_state(self, new_state):
-        self.previous_state = self.state
-        self.state = new_state
-        self.index = -1
-        self.tick = 0
+        if self.loaded:
+            glDeleteVertexArrays(1, (self.vao,))
+            glDeleteBuffers(1, (self.vbo,))

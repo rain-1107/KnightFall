@@ -17,10 +17,6 @@ except ModuleNotFoundError:
     exit()
 
 pygame.init()
-pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
-pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
-pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK,
-                                pygame.GL_CONTEXT_PROFILE_CORE)
 
 import KTFL.display
 import KTFL.gui
@@ -30,4 +26,5 @@ import KTFL.draw
 import KTFL.util
 import KTFL.entities
 import KTFL.particle
+import KTFL.sprite
 import KTFL.net

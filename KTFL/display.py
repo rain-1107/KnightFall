@@ -15,10 +15,16 @@ class Display:
         else:
             self.surface = pygame.display.set_mode(size, pygame.OPENGL | pygame.DOUBLEBUF)
             self.size = KTFL.util.Vector2.list_to_vec(size)
-        self.surface = pygame.display.set_mode((640, 480), pygame.OPENGL | pygame.DOUBLEBUF)
+
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MAJOR_VERSION, 3)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_MINOR_VERSION, 3)
+        pygame.display.gl_set_attribute(pygame.GL_CONTEXT_PROFILE_MASK,
+                                        pygame.GL_CONTEXT_PROFILE_CORE)
+
         glClearColor(0.1, 0.2, 0.2, 1)
         glEnable(GL_BLEND)
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
+
         self.cameras = []
         self.fps = fps
         self.clock = pygame.time.Clock()
@@ -37,14 +43,17 @@ class Display:
     def update(self):  # TODO: add drawing code here for all sprites for optimisation (OpenGL); use batching etc.or event in pygame.event.get():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                sys.exit()
+                self.close()
         # refresh screen
         glClear(GL_COLOR_BUFFER_BIT)
+
         glUseProgram(self.shader)
+
         for image in self.draw_queue:
             KTFL.draw.TEXTURE_CACHE[image].use()
             for instance in self.draw_queue[image]:
                 KTFL.draw.TEXTURE_CACHE[image].quad.draw(instance[0], instance[1])
+
         pygame.display.flip()
         self.clock.tick(self.fps)
         self.delta_time = 1 / (self.clock.get_fps()+1)
@@ -54,11 +63,17 @@ class Display:
         camera.display = self
         if not camera.display_size:
             camera.display_size = self.size
+            camera.size_factor = camera.size/self.size
         self.cameras.append(camera)
 
-    def add_cameras(self, cameras):
+    def add_cameras(self, *cameras):
         for camera in cameras:
             self.add_camera(camera)
+
+    def close(self):
+        for obj in KTFL.draw.OPENGL_OBJECTS:
+            obj.destroy()
+        exit()
 
 
 class Camera:
@@ -67,15 +82,18 @@ class Camera:
         self.display = None
         self.display_size = display_size
         self.position = Vector2.list_to_vec(position)
+        self.size_factor = Vector2(1, 1)
         self.surface = pygame.surface.Surface(size, pygame.SRCALPHA)
         self.surface.set_clip((0, 0, self.size.x, self.size.y))
         self.draw_offset = Vector2(0, 0)
         self.world_pos = Vector2(0, 0)
 
     def draw_sprite(self, sprite):
+        pos = sprite.top_left.copy()
+        pos = (pos-self.world_pos+self.draw_offset) * self.size_factor + self.position
         if sprite.image in self.display.draw_queue:
-            self.display.draw_queue[sprite.image].append([self, sprite.top_left.list])
-        self.display.draw_queue[sprite.image] = [[self, sprite.top_left.list]]
+            self.display.draw_queue[sprite.image].append([self, pos.list])
+        self.display.draw_queue[sprite.image] = [[self, pos.list]]
 
     def lock_to(self, sprite):
         self.lock_x_to(sprite)

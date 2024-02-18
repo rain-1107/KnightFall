@@ -5,7 +5,7 @@ import json
 
 from .gui import get_text_surf
 from .util import *
-from .draw import Sprite, AnimatedSprite
+from .sprite import Sprite, AnimatedSprite
 
 
 class Level:

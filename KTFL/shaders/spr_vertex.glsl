@@ -12,7 +12,7 @@ uniform vec3 cameraScale;
 
 void main()
 {
-    gl_Position = vec4((vertexPos + objectPos) * cameraScale, 1.0);
+    gl_Position = vec4(vertexPos * cameraScale + objectPos, 1.0);
     fragmentColor = vertexColor;
     fragmentTexCoord = vertexTexCoord;
 }
