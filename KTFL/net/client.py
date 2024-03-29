@@ -44,6 +44,7 @@ class Client:
             message = Message.decode(receive)
             if message:
                 if message.message_type == UPDATE_VAR and message.id in self._vars:
+                    self._vars[message.id].data_type = message.data_type
                     self._vars[message.id].value = message.data
                     if message.data_type == STRING:
                         string = self.ins.recv(int(message.data)).decode("utf-8")
@@ -86,7 +87,7 @@ class Client:
         print("Closing connection")
         self.connected = False
 
-    def create_variable(self, name: str, value, data_type, id=None):  # NOTE: This function will pause running to wait for a response
+    def create_variable(self, name: str, value, data_type, id=None, interpolated=False):  # NOTE: This function will pause running to wait for a response
         if id is None:
             self.messages.append(Message(UNUSED_ID_REQUEST, 0, NUMBER, 0))
             waiting = True
@@ -96,7 +97,10 @@ class Client:
                         id = int(message.data)
                         self.received_data.remove(message)
                         waiting = False
-        self.messages.append(Message(CREATE_VAR, name.__len__(), NUMBER, id, string=name))
+        msg_type = CREATE_VAR
+        if interpolated:
+            msg_type = CREATE_INTERPOLATED_VAR
+        self.messages.append(Message(msg_type, name.__len__(), NUMBER, id, string=name))
         self.update_variable(id, value, data_type)
         waiting = True
         while waiting:

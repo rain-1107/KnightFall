@@ -1,1 +1,1 @@
-{"size":  [50, 100], "position":  [100, 100], "image_data":  {"idle":  {"loop": true, "tick":  0.5, "images":  ["idle1", "idle2", "idle3"]}}}
+{"size":  [25, 50], "position":  [100, 100], "image_data":  {"idle":  {"loop": true, "tick":  0.5, "images":  ["idle1", "idle2", "idle3"]}}}

@@ -81,6 +81,7 @@ class Server:
                     if message.id in self.variables and \
                             (self.variables[message.id].owner is None or self.variables[message.id].owner == client):
                         self.variables[message.id].value = message.data
+                        self.variables[message.id].data_type = message.data_type
                         if message.data_type == STRING:
                             string = client.ins.recv(int(message.data)).decode("utf-8")
                             message.string = string
@@ -136,7 +137,7 @@ class Server:
             client.outs.send(create_msg.get_bytes())
             client.outs.send(create_msg.get_string_bytes())
             if var.data_type != STRING:
-                msg = Message(UPDATE_VAR, var.value.__len__(), var.data_type, id, string=var.value)
+                msg = Message(UPDATE_VAR, var.value, var.data_type, id, string=var.value)
                 client.outs.send(msg.get_bytes())
                 client.outs.send(msg.get_bytes())
             else:

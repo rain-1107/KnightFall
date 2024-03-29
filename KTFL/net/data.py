@@ -44,25 +44,29 @@ class InterpolatedData:
         self.prev_val = [value, time()]
         self.interpolated = True
         self.owner = None
+
     @property
     def value(self):
-        if self.data_type == VECTOR:
+        try:
+            if self.data_type == VECTOR:
+                if self.current_val[1] == self.prev_val[1]:
+                    return self.current_val[0]
+                xval = ((time()-self.current_val[1])*(self.current_val[0][0]-self.prev_val[0][0]) /
+                        (self.current_val[1]-self.prev_val[1]))
+                if abs(xval) > abs(self.current_val[0][0] - self.prev_val[0][0]):
+                    xval = self.current_val[0][0] - self.prev_val[0][0]
+                yval = ((time() - self.current_val[1]) * (self.current_val[0][1] - self.prev_val[0][1]) /
+                        (self.current_val[1] - self.prev_val[1]))
+                if abs(yval) > abs(self.current_val[0][1] - self.prev_val[0][1]):
+                    yval = self.current_val[0][1] - self.prev_val[0][1]
+                return xval + self.prev_val[0][0], yval + self.prev_val[0][1]
             if self.current_val[1] == self.prev_val[1]:
                 return self.current_val[0]
-            xval = ((time()-self.current_val[1])*(self.current_val[0][0]-self.prev_val[0][0]) /
-                    (self.current_val[1]-self.prev_val[1]))
-            if abs(xval) > abs(self.current_val[0][0] - self.prev_val[0][0]):
-                xval = self.current_val[0][0] - self.prev_val[0][0]
-            yval = ((time() - self.current_val[1]) * (self.current_val[0][1] - self.prev_val[0][1]) /
-                    (self.current_val[1] - self.prev_val[1]))
-            if abs(yval) > abs(self.current_val[0][1] - self.prev_val[0][1]):
-                yval = self.current_val[0][1] - self.prev_val[0][1]
-            return xval + self.prev_val[0][0], yval + self.prev_val[0][0]
-        if self.current_val[1] == self.prev_val[1]:
-            return self.current_val[0]
-        val = ((time()-self.current_val[1])*(self.current_val[0]-self.prev_val[0])/(self.current_val[1]-self.prev_val[1]))
-        if abs(val) > abs(self.current_val[0] - self.prev_val[0]):
-            return self.current_val[0]
+            val = ((time()-self.current_val[1])*(self.current_val[0]-self.prev_val[0])/(self.current_val[1]-self.prev_val[1]))
+            if abs(val) > abs(self.current_val[0] - self.prev_val[0]):
+                return self.current_val[0]
+        except TypeError:
+            return 0
         return self.prev_val[0] + val
 
     @value.setter
